@@ -590,3 +590,365 @@ Use precise, research-backed scoring:
 }
 `;
 
+// Industry-Specific Interview Mode Prompts
+export const getIndustryPrompt = (mode: string): string => {
+  const prompts: Record<string, string> = {
+    general: `
+## GENERAL INTERVIEW MODE
+Focus on universal interview competencies applicable to any role or industry.
+Evaluate standard professional communication, body language, and presentation skills.
+`,
+    tech: `
+## TECH/SOFTWARE ENGINEERING INTERVIEW MODE
+**Special Focus Areas:**
+- Technical communication clarity (can they explain complex concepts simply?)
+- Problem-solving verbalization (how they articulate their thought process)
+- FAANG-style behavioral questions (Leadership Principles, STAR method)
+- Whiteboard/coding explanation skills
+- System design communication patterns
+- Collaboration signals for team environments
+- Growth mindset and learning agility indicators
+- Handling ambiguity and edge cases discussion
+
+**Tech-Specific Red Flags:**
+- Overconfidence without substance
+- Inability to admit knowledge gaps
+- Poor explanation of technical decisions
+- Defensive reactions to probing questions
+
+**Bonus Evaluation:**
+- Open source/side project passion signals
+- Technical depth vs breadth balance
+- Architecture thinking patterns
+`,
+    consulting: `
+## CONSULTING/MBA INTERVIEW MODE
+**Special Focus Areas:**
+- Case study structuring ability
+- Hypothesis-driven thinking signals
+- MECE framework application
+- Executive presence and gravitas
+- Client-facing communication style
+- 80/20 prioritization evidence
+- Synthesis and "so what" conclusions
+- Stakeholder management language
+
+**Consulting-Specific Metrics:**
+- Structure score (how organized is their response)
+- Insight quality (depth of analysis)
+- Communication pyramid principle adherence
+- Top-down vs bottom-up thinking
+
+**Partner-Track Signals:**
+- Leadership without authority
+- Business development potential
+- Team motivation language
+`,
+    medical: `
+## MEDICAL/HEALTHCARE INTERVIEW MODE
+**Special Focus Areas:**
+- Patient empathy and bedside manner
+- Clinical reasoning verbalization
+- Ethical decision-making frameworks
+- Stress management under pressure
+- Team-based care communication (SBAR)
+- Handling uncertainty in diagnosis discussion
+- Professionalism and boundaries
+- Cultural competency signals
+
+**Healthcare-Specific Evaluation:**
+- Compassion fatigue indicators
+- Work-life integration awareness
+- Evidence-based practice language
+- Continuous learning commitment
+
+**Critical Assessment:**
+- Crisis communication ability
+- Bad news delivery sensitivity
+- Patient advocacy signals
+`,
+    sales: `
+## SALES/BUSINESS DEVELOPMENT INTERVIEW MODE
+**Special Focus Areas:**
+- Persuasion and influence techniques
+- Rapport building speed and quality
+- Objection handling patterns
+- Value proposition articulation
+- Active listening indicators
+- Closing signals and assumptive language
+- Pipeline/metrics orientation
+- Competitive positioning awareness
+
+**Sales-Specific Metrics:**
+- Energy and enthusiasm calibration
+- Rejection resilience indicators
+- Hunter vs farmer profile signals
+- Negotiation style patterns
+
+**Revenue Potential Signals:**
+- Goal orientation language
+- Territory management thinking
+- Customer success mindset
+`,
+    legal: `
+## LEGAL/LAW INTERVIEW MODE
+**Special Focus Areas:**
+- Analytical reasoning demonstration
+- Argumentation structure and logic
+- Precedent and case citation patterns
+- Ethical reasoning frameworks
+- Client confidentiality awareness
+- Adversarial vs collaborative positioning
+- Written vs oral advocacy balance
+- Attention to detail signals
+
+**Legal-Specific Evaluation:**
+- Issue spotting ability
+- Risk assessment language
+- Billable hour consciousness
+- Pro bono and ethics commitment
+
+**Partner-Track Indicators:**
+- Business development orientation
+- Mentorship and training mindset
+- Firm culture fit signals
+`,
+    finance: `
+## FINANCE/INVESTMENT BANKING INTERVIEW MODE
+**Special Focus Areas:**
+- Quantitative reasoning verbalization
+- Market awareness and current events
+- Deal experience articulation
+- Modeling and valuation discussion
+- Client relationship management
+- Attention to detail and accuracy
+- Time pressure performance signals
+- Hierarchy and team dynamics awareness
+
+**Finance-Specific Metrics:**
+- Technical precision in terminology
+- Commercial awareness depth
+- Risk assessment language
+- Entrepreneurial thinking
+
+**Deal-Maker Signals:**
+- Relationship building orientation
+- Long-term value creation mindset
+- Stress performance indicators
+`,
+    creative: `
+## CREATIVE/DESIGN INTERVIEW MODE
+**Special Focus Areas:**
+- Portfolio storytelling ability
+- Design thinking process articulation
+- User empathy and research orientation
+- Iteration and feedback receptiveness
+- Cross-functional collaboration signals
+- Brand and aesthetic sensibility
+- Innovation and trend awareness
+- Critique handling maturity
+
+**Creative-Specific Evaluation:**
+- Process vs outcome balance
+- Inspiration and influence awareness
+- Technical skill vs conceptual thinking
+- Deadline and constraint management
+
+**Creative Director Potential:**
+- Team leadership and mentorship
+- Client presentation confidence
+- Strategic thinking beyond execution
+`
+  };
+
+  return prompts[mode] || prompts.general;
+};
+
+// Multi-Language Analysis Support
+export const getLanguagePrompt = (language: string): string => {
+  const prompts: Record<string, string> = {
+    english: `
+## LANGUAGE: ENGLISH
+Provide all analysis and feedback in English.
+Evaluate English language proficiency, vocabulary range, and articulation quality.
+Note any accent considerations that may affect clarity.
+`,
+    hindi: `
+## LANGUAGE: HINDI (हिंदी)
+Provide the executive summary, key insights, and improvement recommendations in Hindi.
+Evaluate Hindi language fluency, formal vs informal register usage.
+Consider Hindi-English code-switching patterns common in Indian corporate environments.
+Use Devanagari script for Hindi portions.
+
+**Hindi-Specific Evaluation:**
+- शुद्ध हिंदी vs Hinglish balance
+- Regional accent clarity
+- Formal business Hindi proficiency
+`,
+    spanish: `
+## LANGUAGE: SPANISH (Español)
+Provide analysis feedback in Spanish.
+Evaluate Spanish language proficiency and formal business communication.
+Consider regional variations (Latin American vs Castilian Spanish).
+
+**Spanish-Specific Evaluation:**
+- Formal "usted" vs informal "tú" usage
+- Professional vocabulary range
+- Clear articulation and pace
+`,
+    french: `
+## LANGUAGE: FRENCH (Français)
+Provide analysis feedback in French.
+Evaluate French language proficiency and formal business communication.
+Consider formal register appropriate for professional settings.
+
+**French-Specific Evaluation:**
+- Formal "vous" usage consistency
+- Professional vocabulary (vocabulaire professionnel)
+- Liaison and pronunciation clarity
+`,
+    german: `
+## LANGUAGE: GERMAN (Deutsch)
+Provide analysis feedback in German.
+Evaluate German language proficiency and formal business communication.
+Consider formal register with appropriate "Sie" usage.
+
+**German-Specific Evaluation:**
+- Formal "Sie" vs informal "du" consistency
+- Technical and business German vocabulary
+- Clear compound word pronunciation
+`,
+    mandarin: `
+## LANGUAGE: MANDARIN CHINESE (普通话)
+Provide analysis feedback in Mandarin Chinese using Simplified Chinese characters.
+Evaluate Mandarin proficiency, tone accuracy, and formal business register.
+
+**Mandarin-Specific Evaluation:**
+- 正式商务用语 (formal business language)
+- 声调准确性 (tone accuracy)
+- 专业词汇运用 (professional vocabulary usage)
+`,
+    japanese: `
+## LANGUAGE: JAPANESE (日本語)
+Provide analysis feedback in Japanese.
+Evaluate Japanese language proficiency with appropriate keigo (敬語) usage.
+
+**Japanese-Specific Evaluation:**
+- 敬語の適切な使用 (appropriate honorific usage)
+- ビジネス日本語 (business Japanese)
+- 明確な発音 (clear pronunciation)
+`,
+    arabic: `
+## LANGUAGE: ARABIC (العربية)
+Provide analysis feedback in Modern Standard Arabic.
+Evaluate Arabic language proficiency and formal business communication.
+
+**Arabic-Specific Evaluation:**
+- الفصحى vs العامية balance (MSA vs dialect)
+- Professional vocabulary usage
+- Clear articulation
+`,
+    portuguese: `
+## LANGUAGE: PORTUGUESE (Português)
+Provide analysis feedback in Portuguese.
+Evaluate Portuguese language proficiency and formal business communication.
+Consider regional variations (Brazilian vs European Portuguese).
+
+**Portuguese-Specific Evaluation:**
+- Formal register consistency
+- Professional vocabulary range
+- Regional pronunciation clarity
+`
+  };
+
+  return prompts[language] || prompts.english;
+};
+
+// Interview Mode Configurations for UI
+export const INTERVIEW_MODES = [
+  {
+    id: 'general',
+    name: 'General',
+    description: 'Universal interview skills',
+    icon: 'Briefcase',
+    color: 'indigo',
+    gradient: 'from-indigo-500 to-purple-500',
+    focusAreas: ['Communication', 'Body Language', 'Professionalism']
+  },
+  {
+    id: 'tech',
+    name: 'Tech/FAANG',
+    description: 'Software & Engineering roles',
+    icon: 'Code',
+    color: 'cyan',
+    gradient: 'from-cyan-500 to-blue-500',
+    focusAreas: ['Problem Solving', 'Technical Communication', 'System Thinking']
+  },
+  {
+    id: 'consulting',
+    name: 'Consulting/MBA',
+    description: 'Strategy & Management',
+    icon: 'TrendingUp',
+    color: 'emerald',
+    gradient: 'from-emerald-500 to-green-500',
+    focusAreas: ['Case Structuring', 'Executive Presence', 'Synthesis']
+  },
+  {
+    id: 'medical',
+    name: 'Medical',
+    description: 'Healthcare & Clinical',
+    icon: 'Heart',
+    color: 'red',
+    gradient: 'from-red-500 to-rose-500',
+    focusAreas: ['Patient Empathy', 'Clinical Reasoning', 'Ethics']
+  },
+  {
+    id: 'sales',
+    name: 'Sales/BD',
+    description: 'Business Development',
+    icon: 'Target',
+    color: 'orange',
+    gradient: 'from-orange-500 to-amber-500',
+    focusAreas: ['Persuasion', 'Rapport Building', 'Closing']
+  },
+  {
+    id: 'legal',
+    name: 'Legal/Law',
+    description: 'Law & Compliance',
+    icon: 'Scale',
+    color: 'slate',
+    gradient: 'from-slate-500 to-gray-600',
+    focusAreas: ['Argumentation', 'Analytical Reasoning', 'Ethics']
+  },
+  {
+    id: 'finance',
+    name: 'Finance/IB',
+    description: 'Investment & Banking',
+    icon: 'DollarSign',
+    color: 'green',
+    gradient: 'from-green-500 to-emerald-600',
+    focusAreas: ['Quantitative Skills', 'Market Awareness', 'Deal Experience']
+  },
+  {
+    id: 'creative',
+    name: 'Creative/Design',
+    description: 'Design & Arts',
+    icon: 'Palette',
+    color: 'pink',
+    gradient: 'from-pink-500 to-purple-500',
+    focusAreas: ['Portfolio Storytelling', 'Design Thinking', 'Creativity']
+  }
+];
+
+// Language Configurations for UI
+export const SUPPORTED_LANGUAGES = [
+  { id: 'english', name: 'English', nativeName: 'English', flag: '🇺🇸' },
+  { id: 'hindi', name: 'Hindi', nativeName: 'हिंदी', flag: '🇮🇳' },
+  { id: 'spanish', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
+  { id: 'french', name: 'French', nativeName: 'Français', flag: '🇫🇷' },
+  { id: 'german', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪' },
+  { id: 'mandarin', name: 'Mandarin', nativeName: '普通话', flag: '🇨🇳' },
+  { id: 'japanese', name: 'Japanese', nativeName: '日本語', flag: '🇯🇵' },
+  { id: 'arabic', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦' },
+  { id: 'portuguese', name: 'Portuguese', nativeName: 'Português', flag: '🇧🇷' }
+];

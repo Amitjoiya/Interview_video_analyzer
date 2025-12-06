@@ -1,14 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="InterviewIQ Pro - AI-powered interview performance analysis with predictive scoring, body language AI, and voice pattern recognition." />
     <meta name="keywords" content="interview practice, AI interview coach, body language analysis, interview preparation, job interview" />
     <meta name="author" content="InterviewIQ Team" />
-    <title>InterviewIQ Pro | AI Interview Performance Analyzer</title>
+    <title>APEX-7 | AI Interview Analysis System</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // Tailwind config with dark mode
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              // Custom color extensions if needed
+            }
+          }
+        }
+      }
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
       * {
@@ -16,28 +29,57 @@
       }
       body {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        background-color: #f8fafc;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+        transition: background-color 0.3s ease;
       }
       
-      /* Custom scrollbar */
-      ::-webkit-scrollbar {
+      /* Dark mode body */
+      .dark body, html.dark body {
+        background-color: #020617;
+      }
+      
+      /* Light mode body */
+      .light body, html.light body {
+        background-color: #f8fafc;
+      }
+      
+      /* Dark mode scrollbar */
+      .dark ::-webkit-scrollbar {
         width: 10px;
       }
-      ::-webkit-scrollbar-track {
-        background: #f1f5f9; 
+      .dark ::-webkit-scrollbar-track {
+        background: #1e293b; 
       }
-      ::-webkit-scrollbar-thumb {
+      .dark ::-webkit-scrollbar-thumb {
         background: linear-gradient(180deg, #818cf8, #a78bfa);
         border-radius: 5px;
       }
-      ::-webkit-scrollbar-thumb:hover {
+      .dark ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(180deg, #6366f1, #8b5cf6);
+      }
+      
+      /* Light mode scrollbar */
+      .light ::-webkit-scrollbar {
+        width: 10px;
+      }
+      .light ::-webkit-scrollbar-track {
+        background: #f1f5f9; 
+      }
+      .light ::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, #818cf8, #a78bfa);
+        border-radius: 5px;
+      }
+      .light ::-webkit-scrollbar-thumb:hover {
         background: linear-gradient(180deg, #6366f1, #8b5cf6);
       }
       
       /* Selection styling */
-      ::selection {
+      .dark ::selection {
+        background-color: #4338ca;
+        color: #e0e7ff;
+      }
+      .light ::selection {
         background-color: #c7d2fe;
         color: #3730a3;
       }

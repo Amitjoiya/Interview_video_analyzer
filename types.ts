@@ -192,12 +192,21 @@ export interface FinalVerdict {
   assessor_notes: string;
 }
 
+// Detected Languages from Video Analysis
+export interface DetectedLanguages {
+  primary: string;
+  secondary?: string[];
+  confidence: number;
+  notes?: string;
+}
+
 export interface AnalysisResponse {
   candidate_name: string;
   assessment_id: string;
   analysis_timestamp: string;
   question_identified: string;
   question_category: string;
+  detectedLanguages?: DetectedLanguages; // Auto-detected languages from video
   executive_summary: ExecutiveSummary;
   key_metrics_dashboard: KeyMetrics;
   first_impression_analysis: FirstImpressionAnalysis;
@@ -217,9 +226,103 @@ export interface AnalysisResponse {
   final_verdict: FinalVerdict;
 }
 
+// Interview Mode Types
+export type InterviewMode = 
+  | 'general'
+  | 'tech'
+  | 'consulting'
+  | 'medical'
+  | 'sales'
+  | 'legal'
+  | 'finance'
+  | 'creative';
+
+// Language Support
+export type AnalysisLanguage = 
+  | 'english'
+  | 'hindi'
+  | 'spanish'
+  | 'french'
+  | 'german'
+  | 'mandarin'
+  | 'japanese'
+  | 'arabic'
+  | 'portuguese';
+
+export interface InterviewModeConfig {
+  id: InterviewMode;
+  name: string;
+  description: string;
+  icon: string;
+  color: string;
+  gradient: string;
+  focusAreas: string[];
+}
+
+export interface LanguageConfig {
+  id: AnalysisLanguage;
+  name: string;
+  nativeName: string;
+  flag: string;
+}
+
+// =====================================================
+// RESUME CHECKER TYPES
+// =====================================================
+
+export interface ResumeSection {
+  name: string;
+  score: number;
+  feedback: string;
+  suggestions: string[];
+}
+
+export interface ResumeAnalysis {
+  overall_score: number;
+  ats_compatibility_score: number;
+  sections: {
+    contact_info: ResumeSection;
+    summary: ResumeSection;
+    experience: ResumeSection;
+    education: ResumeSection;
+    skills: ResumeSection;
+    formatting: ResumeSection;
+  };
+  keyword_analysis: {
+    found_keywords: string[];
+    missing_keywords: string[];
+    keyword_density: number;
+  };
+  strengths: string[];
+  weaknesses: string[];
+  critical_issues: string[];
+  improvement_priority: {
+    priority: 'high' | 'medium' | 'low';
+    issue: string;
+    fix: string;
+  }[];
+  industry_fit: {
+    best_fit_roles: string[];
+    experience_level: string;
+    salary_range_estimate: string;
+  };
+  action_items: string[];
+  rewritten_summary?: string;
+  detectedLanguage?: string;
+}
+
+// App Mode for navigation
+export type AppMode = 'video-analysis' | 'resume-checker';
+
+// Update AppState to include new states
 export enum AppState {
   IDLE = 'IDLE',
+  MODE_SELECT = 'MODE_SELECT',
   ANALYZING = 'ANALYZING',
   SUCCESS = 'SUCCESS',
-  ERROR = 'ERROR'
+  ERROR = 'ERROR',
+  // Resume Checker States
+  RESUME_UPLOAD = 'RESUME_UPLOAD',
+  RESUME_ANALYZING = 'RESUME_ANALYZING',
+  RESUME_RESULT = 'RESUME_RESULT'
 }
