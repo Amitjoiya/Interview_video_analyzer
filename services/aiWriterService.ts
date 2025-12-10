@@ -382,7 +382,7 @@ const extractTextWithGemini = async (file: File): Promise<string> => {
     const base64Data = await getFileAsBase64(file);
     
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.5-flash',
       contents: [
         {
           role: 'user',
