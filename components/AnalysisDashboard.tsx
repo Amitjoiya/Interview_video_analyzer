@@ -10,7 +10,8 @@ import {
   ThumbsUp, ThumbsDown, Star, ChevronRight, Lightbulb, Gauge, Shield,
   Heart, Users, Flame, AlertCircle, Play, Timer, MessageSquare,
   Crown, Diamond, Rocket, Focus, Waves, Fingerprint, Scan, Radio,
-  PieChart, TrendingDown, ArrowUpRight, ArrowDownRight, Minus
+  PieChart, TrendingDown, ArrowUpRight, ArrowDownRight, Minus, FileText,
+  ChevronDown, ChevronUp, Copy, Check
 } from 'lucide-react';
 import { AnalysisResponse } from '../types';
 
@@ -20,6 +21,16 @@ interface AnalysisDashboardProps {
 
 export const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ data }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'deep-dive' | 'psychology' | 'action-plan'>('overview');
+  const [isTranscriptExpanded, setIsTranscriptExpanded] = useState(true);
+  const [copiedTranscript, setCopiedTranscript] = useState(false);
+
+  const handleCopyTranscript = async () => {
+    if (data.full_transcript) {
+      await navigator.clipboard.writeText(data.full_transcript);
+      setCopiedTranscript(true);
+      setTimeout(() => setCopiedTranscript(false), 2000);
+    }
+  };
 
   const mainChartData = [
     { name: 'Content', score: data.analysis.content_quality.score * 10, fill: '#6366f1' },
@@ -223,6 +234,105 @@ export const AnalysisDashboard: React.FC<AnalysisDashboardProps> = ({ data }) =>
           </div>
         </div>
       </div>
+
+      {/* Full Transcript Section - Shows what was spoken in the video */}
+      {data.full_transcript && (
+        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl shadow-2xl border border-slate-700 overflow-hidden">
+          {/* Header */}
+          <div 
+            className="flex items-center justify-between p-5 cursor-pointer hover:bg-white/5 transition-colors"
+            onClick={() => setIsTranscriptExpanded(!isTranscriptExpanded)}
+          >
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg">
+                <FileText className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">📝 Video Transcript</h3>
+                <p className="text-slate-400 text-sm">Complete text of what was spoken in the video</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCopyTranscript();
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white text-sm font-medium transition-all"
+              >
+                {copiedTranscript ? (
+                  <>
+                    <Check className="w-4 h-4 text-green-400" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4" />
+                    Copy
+                  </>
+                )}
+              </button>
+              <div className="p-2 bg-white/10 rounded-lg">
+                {isTranscriptExpanded ? (
+                  <ChevronUp className="w-5 h-5 text-white" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-white" />
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Transcript Content */}
+          {isTranscriptExpanded && (
+            <div className="px-5 pb-5 animate-fade-in">
+              <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-600/50">
+                <p className="text-slate-200 text-lg leading-relaxed whitespace-pre-wrap font-light">
+                  "{data.full_transcript}"
+                </p>
+              </div>
+
+              {/* Transcript Breakdown (if available in deep mode) */}
+              {data.transcript_breakdown && data.transcript_breakdown.length > 0 && (
+                <div className="mt-6">
+                  <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
+                    <Scan className="w-5 h-5 text-indigo-400" />
+                    Line-by-Line Analysis
+                  </h4>
+                  <div className="space-y-4">
+                    {data.transcript_breakdown.map((line, index) => (
+                      <div key={index} className="bg-slate-800/30 rounded-xl p-4 border border-slate-600/30">
+                        <div className="flex items-center gap-3 mb-3">
+                          <span className="px-2 py-1 bg-indigo-500/30 text-indigo-300 rounded text-xs font-mono">
+                            {line.timestamp}
+                          </span>
+                          <div className={`px-2 py-1 rounded text-xs font-bold ${
+                            line.score >= 8 ? 'bg-green-500/30 text-green-300' :
+                            line.score >= 6 ? 'bg-yellow-500/30 text-yellow-300' :
+                            'bg-red-500/30 text-red-300'
+                          }`}>
+                            {line.score}/10
+                          </div>
+                        </div>
+                        <p className="text-slate-300 mb-2">
+                          <span className="text-slate-500">Said:</span> "{line.original_text}"
+                        </p>
+                        <p className="text-slate-400 text-sm mb-2">
+                          <span className="text-indigo-400">Analysis:</span> {line.analysis}
+                        </p>
+                        {line.improved_version && (
+                          <p className="text-green-300 text-sm bg-green-500/10 rounded-lg p-3">
+                            <span className="text-green-400 font-semibold">💡 Better:</span> "{line.improved_version}"
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Navigation Tabs */}
       <div className="flex gap-2 p-1 bg-slate-100 rounded-2xl overflow-x-auto">

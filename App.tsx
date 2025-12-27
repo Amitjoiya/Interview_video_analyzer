@@ -10,17 +10,18 @@ import { EmailWriter } from './components/EmailWriter';
 import { LinkedInOptimizer } from './components/LinkedInOptimizer';
 import { InterviewQABank } from './components/InterviewQABank';
 import { SalaryCoach } from './components/SalaryCoach';
+import { AIChatBot } from './components/AIChatBot';
 import { analyzeInterviewVideo, AnalysisOptions, clearAnalysisCache } from './services/geminiService';
 import { analyzeResume } from './services/resumeService';
-import { AnalysisResponse, AppState, InterviewMode, ResumeAnalysis } from './types';
+import { AnalysisResponse, AppState, InterviewMode, ResumeAnalysis, InterviewTarget } from './types';
 import { INTERVIEW_MODES } from './constants';
 import { useLanguage } from './LanguageContext';
 import { 
   AlertTriangle, RefreshCw, Sparkles, Target, Brain, Mic, Eye, Scan, Fingerprint, Radio, 
-  Activity, Shield, Award, ChevronRight, Briefcase, Code, TrendingUp, Heart, Scale, 
-  DollarSign, Palette, Globe, Check, ArrowRight, Zap, Languages, FileText, Video, Upload,
-  Play, Camera, Menu, X, PenTool, Search, Mail, Linkedin, MessageSquare, BadgeDollarSign
+  Activity, Shield, Award, ChevronRight, Briefcase, Code, TrendingUp, Heart, Scale, DollarSign, Palette, Globe, Check, ArrowRight, Zap, Languages, FileText, Video, Upload, Play, Camera, Menu, X, PenTool, Search, Mail, Linkedin, MessageSquare, BadgeDollarSign
 } from 'lucide-react';
+import RotatingText from './components/RotatingText';
+import Prism from './components/Prism';
 
 // Icon mapping for interview modes
 const ModeIcons: Record<string, React.FC<{ className?: string }>> = {
@@ -200,6 +201,9 @@ const App: React.FC = () => {
   // Resume Checker States
   const [resumeResult, setResumeResult] = useState<ResumeAnalysis | null>(null);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [resumeCompany, setResumeCompany] = useState<string>('');
+  const [resumeTarget, setResumeTarget] = useState<InterviewTarget>('general');
+  const [resumeDepth, setResumeDepth] = useState<'quick' | 'standard' | 'deep'>('standard');
   
   // Feature Selection
   const [selectedFeature, setSelectedFeature] = useState<'video' | 'resume' | 'pdf' | 'coverletter' | 'jobanalyzer' | 'emailwriter' | 'linkedin' | 'qabank' | 'salarycoach' | null>(null);
@@ -333,6 +337,9 @@ const App: React.FC = () => {
     setAnalysisProgress(0);
     setCurrentAnalysisStep('');
     setSelectedMode('general');
+    setResumeCompany('');
+    setResumeTarget('general');
+    setResumeDepth('standard');
   };
   
   // Handle resume file upload
@@ -349,7 +356,7 @@ const App: React.FC = () => {
     }, 200);
     
     try {
-      const result = await analyzeResume(file);
+      const result = await analyzeResume(file, { target: resumeTarget, depth: resumeDepth, forceRefresh: false, company: resumeCompany });
       clearInterval(progressInterval);
       setAnalysisProgress(100);
       setTimeout(() => {
@@ -373,10 +380,26 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 pb-20 relative overflow-hidden">
+      {/* Prism Background */}
+      <div className="fixed inset-0 z-0">
+        <Prism 
+          animationType="hover" 
+          hueShift={0.5} 
+          glow={0.8} 
+          bloom={1.0} 
+          scale={3.0}
+          noise={0.2}
+          colorFrequency={1.0}
+          hoverStrength={1.5}
+          inertia={0.08}
+          suspendWhenOffscreen={true}
+        />
+      </div>
+      
       {/* Animated Background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
         {/* Gradient Mesh */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-indigo-950/30 to-slate-950"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950/80 via-indigo-950/30 to-slate-950/80"></div>
         
         {/* Animated Orbs */}
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-radial from-indigo-500/10 via-purple-500/5 to-transparent rounded-full blur-3xl animate-float-slow"></div>
@@ -416,7 +439,14 @@ const App: React.FC = () => {
                <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-6 tracking-tight leading-tight">
                  Your AI-Powered
                  <span className="block bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                   Interview Success Partner
+                   Interview Success <span className="inline-block">
+                     <RotatingText
+                       texts={["Partner", "Coach", "Companion", "Advisor"]}
+                       mainClassName="px-2 sm:px-2 md:px-3 bg-cyan-300 text-black overflow-hidden py-0.5 sm:py-1 md:py-2 justify-center rounded-lg inline-block"
+                       splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
+                       rotationInterval={2000}
+                     />
+                   </span>
                  </span>
                </h2>
                <p className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
@@ -737,6 +767,53 @@ const App: React.FC = () => {
              </div>
              
              {/* Resume Upload Zone */}
+            <div className="w-full max-w-xl mb-6 flex flex-col sm:flex-row items-center gap-3">
+              <input
+                type="text"
+                placeholder="Company (optional)"
+                value={resumeCompany}
+                onChange={(e) => setResumeCompany(e.target.value)}
+                className="w-full sm:w-1/2 bg-slate-800/40 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none focus:ring-2 focus:ring-emerald-500"
+              />
+              <select
+                value={resumeTarget}
+                onChange={(e) => setResumeTarget(e.target.value as InterviewTarget)}
+                className="w-full sm:w-1/4 bg-slate-800/40 border border-slate-700 rounded-lg px-3 py-2 text-white outline-none focus:ring-2 focus:ring-emerald-500"
+              >
+                <option value="general">General</option>
+                <option value="faang">FAANG</option>
+                <option value="startup">Startup</option>
+                <option value="mid-market">Mid-Market</option>
+                <option value="manager">Manager/Leadership</option>
+                <option value="executive">Executive/C-Suite</option>
+              </select>
+              <div className="w-full sm:w-auto inline-flex items-center gap-1 bg-slate-800/40 border border-slate-700 rounded-lg px-2 py-1">
+                <button
+                  type="button"
+                  aria-pressed={resumeDepth === 'quick'}
+                  onClick={() => setResumeDepth('quick')}
+                  className={`px-2 py-1 rounded-md text-xs focus:outline-none transition ${resumeDepth === 'quick' ? 'bg-gradient-to-br from-emerald-500 to-teal-500 text-white font-semibold shadow-md' : 'text-slate-300 hover:bg-slate-800/60'}`}
+                >
+                  ⚡ Quick
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={resumeDepth === 'standard'}
+                  onClick={() => setResumeDepth('standard')}
+                  className={`px-2 py-1 rounded-md text-xs focus:outline-none transition ${resumeDepth === 'standard' ? 'bg-gradient-to-br from-emerald-500 to-teal-500 text-white font-semibold shadow-md' : 'text-slate-300 hover:bg-slate-800/60'}`}
+                >
+                  📊 Standard
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={resumeDepth === 'deep'}
+                  onClick={() => setResumeDepth('deep')}
+                  className={`px-2 py-1 rounded-md text-xs focus:outline-none transition ${resumeDepth === 'deep' ? 'bg-gradient-to-br from-emerald-500 to-teal-500 text-white font-semibold shadow-md' : 'text-slate-300 hover:bg-slate-800/60'}`}
+                >
+                  🔬 Deep
+                </button>
+              </div>
+            </div>
              <div className="w-full max-w-xl">
                <label className="relative flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-emerald-500/30 rounded-3xl bg-emerald-500/5 hover:bg-emerald-500/10 hover:border-emerald-500/50 cursor-pointer transition-all duration-300 group">
                  <input
@@ -1152,6 +1229,17 @@ const App: React.FC = () => {
 
       </main>
 
+      {/* AI Chatbot - Always visible */}
+      <AIChatBot 
+        context={
+          analysisResult 
+            ? { type: 'video-analysis', data: analysisResult }
+            : resumeResult 
+              ? { type: 'resume-analysis', data: resumeResult }
+              : { type: 'general' }
+        }
+      />
+
       <style>{`
         @keyframes float-slow {
           0%, 100% { transform: translateY(0) translateX(0); }
@@ -1224,6 +1312,10 @@ const App: React.FC = () => {
           from { opacity: 0; transform: translateY(30px); }
           to { opacity: 1; transform: translateY(0); }
         }
+        @keyframes scaleIn {
+          from { opacity: 0; transform: scale(0.8) translateY(20px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
         
         .animate-scan { animation: scan 2s ease-in-out infinite; }
         .animate-scan-horizontal { animation: scan-horizontal 3s ease-in-out infinite; }
@@ -1241,6 +1333,7 @@ const App: React.FC = () => {
         .animate-loading-bar { animation: loading-bar 1.5s ease-out forwards; }
         .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
         .animate-fade-in-up { animation: fadeInUp 0.8s ease-out forwards; }
+        .animate-scale-in { animation: scaleIn 0.3s ease-out forwards; }
         
         .bg-gradient-radial {
           background: radial-gradient(circle, var(--tw-gradient-stops));

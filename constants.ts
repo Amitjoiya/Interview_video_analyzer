@@ -864,6 +864,37 @@ Consider regional variations (Brazilian vs European Portuguese).
   return prompts[language] || prompts.english;
 };
 
+// Target audience prompts for tailoring analysis and scoring (e.g., FAANG-style expectations)
+export const getTargetPrompt = (target: string): string => {
+  const prompts: Record<string, string> = {
+  general: `
+## TARGET: GENERAL
+Use the default analysis and scoring rubric appropriate for a broad range of companies, focusing on communication, presence, and role fit. Provide balanced feedback for SME or junior roles.
+`,
+  faang: `
+## TARGET: FAANG / HIGHEST-STANDARD TECH (Strict)
+FAANG-style expectations: be strict on technical clarity, problem solving verbalization, STAR-method answers for behavioral questions, product sense, scaling considerations, code clarity, system design trade-offs, and leadership principles. Penalize vague answers, weak structure, and inability to quantify metrics. Adjust scoring to favor depth and crispness. Provide a section mapping to FAANG leadership or bar-raising criteria and actionable, high-impact improvements.
+`,
+  startup: `
+## TARGET: STARTUP (Bias Toward Impact)
+Startup expectations: evaluate bias-to-action, flexibility, risk-taking, scrappy delivery focus, outcome orientation and customer empathy. Reward concise impact statements and initiative-driven examples. Highlight product-market sense and ability to ship quickly.
+`,
+  'mid-market': `
+## TARGET: MID-MARKET / ENTERPRISE
+Expectations include reliability, teamwork, process orientation, results orientation, and stakeholder management. Balance depth with operational maturity; emphasis on deliverables and influence.
+`,
+  manager: `
+## TARGET: MANAGER/LEADERSHIP
+Evaluate people leadership, delegation ability, strategy communication, team outcomes, and conflict management. Reward mentorship examples, accountability tracking, and people metrics.
+`,
+  executive: `
+## TARGET: EXECUTIVE/C-SUITE
+Executive expectations: visionary communication, stakeholder management, strategy alignment, growth metrics and board-level communication clarity. Judge gravitas, composure, and decision-making under ambiguity.
+`
+  };
+  return prompts[target] || prompts.general;
+};
+
 // Interview Mode Configurations for UI
 export const INTERVIEW_MODES = [
   {
@@ -939,6 +970,8 @@ export const INTERVIEW_MODES = [
     focusAreas: ['Portfolio Storytelling', 'Design Thinking', 'Creativity']
   }
 ];
+
+// NOTE: Disabled DEFAULT_FEATURE_ORDER — using static layout
 
 // Language Configurations for UI
 export const SUPPORTED_LANGUAGES = [

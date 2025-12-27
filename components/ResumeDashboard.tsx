@@ -86,6 +86,14 @@ export const ResumeDashboard: React.FC<ResumeDashboardProps> = ({ data }) => {
               <p className={`text-2xl font-bold ${getScoreColor(data.overall_score)} mb-1`}>
                 {getScoreLabel(data.overall_score)}
               </p>
+              <div className="flex items-center gap-3">
+                {data.analysis_target_company && (
+                  <p className="text-sm text-slate-400">Tailored for: <span className="text-emerald-300">{data.analysis_target_company}</span></p>
+                )}
+                {data.analysis_target && (
+                  <p className="text-sm text-slate-400">Target: <span className="text-emerald-300">{data.analysis_target.toUpperCase()}</span></p>
+                )}
+              </div>
               <p className="text-sm text-slate-400">
                 Your resume is {data.overall_score >= 70 ? 'well-optimized' : 'needs improvement'} for ATS systems
               </p>

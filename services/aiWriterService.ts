@@ -1,12 +1,55 @@
 // AI Writer Service - Cover Letters, Emails, and Job Analysis
-import { GoogleGenAI } from '@google/genai';
+// Frontend proxy configuration and helper
+const API_BASE = (typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env.VITE_API_BASE) || 'http://localhost:5001';
 
-const getAI = () => {
-  if (!process.env.API_KEY) {
-    throw new Error("API_KEY environment variable is missing.");
+// Small helper to POST JSON with a few retries for transient backend/network issues
+const postJsonWithRetries = async (path: string, body: any, maxRetries = 2) => {
+  const url = `${API_BASE}${path}`;
+  let attempt = 0;
+  let lastErr: any = null;
+  while (attempt <= maxRetries) {
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (res.status === 503 || res.status === 429) {
+        lastErr = new Error(`Server returned ${res.status}`);
+        const backoff = 300 * Math.pow(2, attempt);
+        await new Promise((r) => setTimeout(r, backoff));
+        attempt += 1;
+        continue;
+      }
+      const j = await res.json();
+      return j;
+    } catch (err: any) {
+      lastErr = err;
+      const backoff = 300 * Math.pow(2, attempt);
+      await new Promise((r) => setTimeout(r, backoff));
+      attempt += 1;
+    }
   }
-  return new GoogleGenAI({ apiKey: process.env.API_KEY });
+  throw lastErr || new Error('Failed to POST JSON');
 };
+
+// Replace server-side getAI with a proxy call to local backend to avoid leaking API keys
+const getAI = () => {
+  return {
+    models: {
+      generateContent: async ({ model, contents, config }: any) => {
+        // Forward the contents object to backend so inlineData (base64) is preserved
+        const body: any = { model, config };
+        if (contents) body.contents = contents;
+        else body.prompt = config?.prompt || '';
+
+        const j = await postJsonWithRetries('/api/generate', body, 2);
+        return { text: j.text || '' };
+      }
+    }
+  };
+};
+// AI Writer Service - Cover Letters, Emails, and Job Analysis
 
 // =====================================================
 // COVER LETTER GENERATOR
@@ -176,7 +219,7 @@ Return ONLY valid JSON:
   "jobTitle": "Extracted job title",
   "company": "Company name if mentioned, otherwise 'Not specified'",
   "location": "Location/remote status if mentioned, otherwise 'Not specified'",
-  "experienceLevel": "Entry-level/Junior/Mid-level/Senior/Lead/Principal/Executive",
+  "experienceLevel": "Entry-level/Junior/Mid-evel/Senior/Lead/Principal/Executive",
   "technicalSkills": ["Technical skill required 1", "Technical skill required 2", "..."],
   "softSkills": ["Soft skill required 1", "Soft skill required 2", "..."],
   "responsibilities": ["Key responsibility 1", "Key responsibility 2", "..."],
@@ -383,36 +426,58 @@ const extractTextWithGemini = async (file: File): Promise<string> => {
     
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
-      contents: [
-        {
-          role: 'user',
-          parts: [
-            {
-              inlineData: {
-                mimeType: file.type || 'application/pdf',
-                data: base64Data
-              }
-            },
-            {
-              text: `Extract ALL text content from this document exactly as it appears. 
-              
-IMPORTANT RULES:
-1. Return ONLY the plain text content - no commentary, no analysis
-2. Preserve the structure (headings, paragraphs, bullet points)
-3. Include ALL text - name, contact info, skills, experience, education, everything
-4. Do not add any introductions like "Here is the text:" or conclusions
-5. Just return the raw extracted text
-
-Start extracting now:`
+      // Use an object with `parts` so the backend forwards inlineData properly
+      contents: {
+        parts: [
+          {
+            inlineData: {
+              mimeType: file.type || 'application/pdf',
+              data: base64Data
             }
-          ]
-        }
-      ]
+          },
+          {
+            text: `Extract ALL text content from this document exactly as it appears.\n\nIMPORTANT RULES:\n1. Return ONLY the plain text content - no commentary, no analysis\n2. Preserve the structure (headings, paragraphs, bullet points)\n3. Include ALL text - name, contact info, skills, experience, education, everything\n4. Do not add any introductions like "Here is the text:" or conclusions\n5. Just return the raw extracted text\n\nStart extracting now:`
+          }
+        ]
+      },
+      config: {
+        temperature: 0.0,
+        topP: 1.0,
+        maxOutputTokens: 32000
+      }
     });
 
     const extractedText = response.text || '';
     
     if (extractedText.length < 50) {
+      // Try one more time with a slightly different prompt in case of transient failure
+      try {
+        const retryResponse = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: {
+            parts: [
+              {
+                inlineData: {
+                  mimeType: file.type || 'application/pdf',
+                  data: base64Data
+                }
+              },
+              {
+                text: `Extract ALL text content from this document. Return ONLY the raw text with preserved structure. Start now:`
+              }
+            ]
+          },
+          config: {
+            temperature: 0.0,
+            topP: 1.0,
+            maxOutputTokens: 32000
+          }
+        });
+        const retryText = retryResponse.text || '';
+        if (retryText.length >= 50) return retryText.trim();
+      } catch (e) {
+        // ignore and fall through to error
+      }
       throw new Error('Could not extract meaningful text from document');
     }
     
@@ -488,6 +553,26 @@ export const extractTextFromDocument = async (file: File): Promise<string> => {
   
   // PDF files - use Gemini AI for extraction
   if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
+    // First try server-side extraction (more reliable with pdf-parse)
+    try {
+      const base64Data = await getFileAsBase64(file);
+      const res = await postJsonWithRetries('/api/extract-text', { base64: base64Data, mimeType: file.type }, 2);
+      if (res && res.text && res.text.trim().length > 30) {
+        return res.text.trim();
+      }
+    } catch (e) {
+      console.warn('Server-side extract-text failed:', e);
+    }
+
+    // Next try local extraction in the browser
+    try {
+      const localText = await extractTextFromPDFLocal(file);
+      if (localText && localText.trim().length > 30) return localText.trim();
+    } catch (err) {
+      console.warn('Local PDF extraction threw an error:', err && err.message ? err.message : err);
+    }
+
+    // Final fallback: Gemini extraction
     return extractTextWithGemini(file);
   }
   
@@ -838,5 +923,62 @@ Provide comprehensive salary negotiation advice for Indian job market. All salar
   } catch (error: any) {
     console.error('Salary negotiation advice error:', error);
     throw new Error('Failed to generate negotiation advice. Please try again.');
+  }
+};
+
+// Try extracting text from PDF locally in the browser using pdfjs as a fallback/primary for PDFs
+// If you see errors about missing pdfjs-dist, run: npm install pdfjs-dist
+// Limit concurrent PDF extraction to avoid browser overload
+let pdfExtractionInProgress = 0;
+const MAX_CONCURRENT_PDF_EXTRACTIONS = 2;
+const extractTextFromPDFLocal = async (file: File): Promise<string> => {
+  if (pdfExtractionInProgress >= MAX_CONCURRENT_PDF_EXTRACTIONS) {
+    // Too many extractions at once, wait and retry
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    return extractTextFromPDFLocal(file);
+  }
+  pdfExtractionInProgress++;
+  try {
+    const arrayBuffer = await getFileAsArrayBuffer(file);
+    // dynamic import of pdfjs
+    // Try dynamic import with two possible paths (some pdfjs versions expose legacy path)
+    let pdfjs: any = null;
+    try {
+      pdfjs = await import('pdfjs-dist/legacy/build/pdf');
+    } catch (e1) {
+      try {
+        pdfjs = await import('pdfjs-dist/build/pdf');
+      } catch (e2) {
+        // If pdfjs isn't available in the client, show a user-friendly error and return empty string
+        console.warn('pdfjs-dist import failed in browser:', e1?.message || e2?.message || e2);
+        alert('PDF extraction requires pdfjs-dist. Please run: npm install pdfjs-dist');
+        return '';
+      }
+    }
+    // For bundlers, worker may be provided; try to set a CDN worker as a fallback
+    try {
+      (pdfjs as any).GlobalWorkerOptions = (pdfjs as any).GlobalWorkerOptions || {};
+      (pdfjs as any).GlobalWorkerOptions.workerSrc = (pdfjs as any).GlobalWorkerOptions.workerSrc || 'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.worker.min.js';
+    } catch (e) {
+      // ignore
+    }
+
+    const loadingTask = (pdfjs as any).getDocument({ data: arrayBuffer });
+    const pdf = await loadingTask.promise;
+    let fullText = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      const pageText = content.items.map((it: any) => it.str).join(' ');
+      fullText += pageText + '\n\n';
+    }
+    if (fullText.trim().length > 30) return fullText.trim();
+    throw new Error('Local PDF extraction returned insufficient text');
+  } catch (err) {
+    console.warn('Local PDF extraction failed:', err && err.message ? err.message : err);
+    // Return empty to indicate failure so caller can fallback to Gemini or server-side extraction
+    return '';
+  } finally {
+    pdfExtractionInProgress--;
   }
 };

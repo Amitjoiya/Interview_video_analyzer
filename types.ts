@@ -207,6 +207,16 @@ export interface AnalysisResponse {
   question_identified: string;
   question_category: string;
   detectedLanguages?: DetectedLanguages; // Auto-detected languages from video
+  // Full transcript of what was spoken in the video
+  full_transcript?: string;
+  // Line-by-line transcript breakdown with timestamps (deep mode)
+  transcript_breakdown?: {
+    timestamp: string;
+    original_text: string;
+    analysis: string;
+    improved_version: string;
+    score: number;
+  }[];
   executive_summary: ExecutiveSummary;
   key_metrics_dashboard: KeyMetrics;
   first_impression_analysis: FirstImpressionAnalysis;
@@ -277,6 +287,18 @@ export interface ResumeSection {
   suggestions: string[];
 }
 
+// Line-by-line analysis entry for deep resume analysis
+export interface ResumeLineAnalysis {
+  line_number: number;
+  original_text: string;
+  category: 'summary' | 'experience' | 'education' | 'skills' | 'contact' | 'other';
+  score: number;
+  issues: string[];
+  improved_version: string;
+  explanation: string;
+  impact: 'high' | 'medium' | 'low';
+}
+
 export interface ResumeAnalysis {
   overall_score: number;
   ats_compatibility_score: number;
@@ -309,6 +331,22 @@ export interface ResumeAnalysis {
   action_items: string[];
   rewritten_summary?: string;
   detectedLanguage?: string;
+  // Optional requested analysis target company (if user specified one during analysis)
+  analysis_target_company?: string;
+  // Optional requested analysis target (e.g., 'faang', 'startup')
+  analysis_target?: InterviewTarget;
+  // Depth of analysis performed
+  analysis_depth?: 'quick' | 'standard' | 'deep';
+  // Deep analysis: line-by-line breakdown (only in deep mode)
+  line_by_line_analysis?: ResumeLineAnalysis[];
+  // Deep analysis: word choice improvements
+  word_choice_analysis?: { weak_word: string; strong_replacement: string }[];
+  // Deep analysis: power verbs that should be used
+  power_verbs_missing?: string[];
+  // Deep analysis: where to add metrics
+  metrics_suggestions?: string[];
+  // Deep analysis: industry-specific keywords to add
+  industry_keywords_to_add?: string[];
 }
 
 // App Mode for navigation
@@ -326,3 +364,6 @@ export enum AppState {
   RESUME_ANALYZING = 'RESUME_ANALYZING',
   RESUME_RESULT = 'RESUME_RESULT'
 }
+
+// Interview Target Types (audience/role expectations) e.g., FAANG, Startup, Mid-size
+export type InterviewTarget = 'general' | 'faang' | 'startup' | 'mid-market' | 'manager' | 'executive';

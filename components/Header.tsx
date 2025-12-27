@@ -23,6 +23,7 @@ export const Header: React.FC = () => {
   const { language, setLanguage, t } = useLanguage();
   const { isDark } = useTheme();
   const [showLangDropdown, setShowLangDropdown] = useState(false);
+  
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -61,6 +62,7 @@ export const Header: React.FC = () => {
               <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-2.5 rounded-xl shadow-lg">
                 <Brain className="w-6 h-6 text-white" />
               </div>
+            
             </div>
             <div>
               <h1 className={`text-xl font-bold tracking-tight flex items-center gap-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
@@ -151,6 +153,8 @@ export const Header: React.FC = () => {
               <Zap className="w-4 h-4 text-yellow-400" />
               <span>Predictive AI</span>
             </div>
+            
+                      
           </div>
         </div>
       </div>
