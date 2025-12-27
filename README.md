@@ -326,43 +326,43 @@ node server/index.js  # backend proxy (optional)
 ```
 apex-7/
 ├── components/
-│   ├── AnalysisDashboard.tsx    # Video analysis results
-│   ├── ResumeDashboard.tsx      # Resume analysis results
-│   ├── Header.tsx               # Navigation with theme toggle
-│   ├── UploadSection.tsx        # Video upload interface
-│   ├── PDFTools.tsx             # PDF manipulation tools
-│   ├── CoverLetterGenerator.tsx # Cover letter AI
-│   ├── JobAnalyzer.tsx          # JD analysis
-│   ├── EmailWriter.tsx          # Email templates
-│   ├── LinkedInOptimizer.tsx    # LinkedIn optimization
-│   ├── InterviewQABank.tsx      # Q&A generation
-│   ├── SalaryCoach.tsx          # Salary negotiation
-│   ├── AIChatBot.tsx            # AI assistant chatbot
-│   ├── Prism.tsx                # 🔮 3D WebGL Prism animation (OGL)
-│   ├── RotatingText.tsx         # 🔄 Animated rotating text (Motion)
-│   ├── ThemeToggle.tsx          # Dark/Light mode toggle
-│   └── Ballpit.tsx              # Legacy 2D animation (deprecated)
+│   ├── AnalysisDashboard.tsx      # Video analysis results
+│   ├── ResumeDashboard.tsx        # Resume analysis results
+│   ├── Header.tsx                 # Navigation with theme toggle
+│   ├── UploadSection.tsx          # Video upload interface
+│   ├── PDFTools.tsx               # PDF manipulation tools
+│   ├── CoverLetterGenerator.tsx   # Cover letter AI
+│   ├── JobAnalyzer.tsx            # JD analysis
+│   ├── EmailWriter.tsx            # Email templates
+│   ├── LinkedInOptimizer.tsx      # LinkedIn optimization
+│   ├── InterviewQABank.tsx        # Q&A generation
+│   ├── SalaryCoach.tsx            # Salary negotiation
+│   ├── AIChatBot.tsx              # AI assistant chatbot
+│   ├── Prism.tsx                  # 🔮 3D WebGL Prism animation (OGL)
+│   ├── RotatingText.tsx           # 🔄 Animated rotating text (Motion)
+│   ├── ThemeToggle.tsx            # Dark/Light mode toggle
+│   └── Ballpit.tsx                # Legacy 2D animation (deprecated)
 ├── services/
-│   ├── geminiService.ts         # Video analysis AI
-│   ├── resumeService.ts         # Resume analysis AI
-│   ├── aiWriterService.ts       # Writing tools AI
-│   └── pdfService.ts            # PDF processing utilities
-├── server/                      # Backend server
-│   ├── index.js                 # Express server with rate limiting & queue
-│   ├── aiClient.js              # Gemini API client with retries
-│   ├── package.json             # Server dependencies
-│   └── .env                     # Environment variables (create this!)
-├── ThemeContext.tsx             # Dark/Light mode context
-├── LanguageContext.tsx          # Multi-language support
-├── App.tsx                      # Main app with routing & intro animation
-├── types.ts                     # TypeScript definitions
-├── constants.ts                 # App constants
-├── translations.ts              # Language translations
-├── index.tsx                    # React entry point
-├── index.html                   # HTML template
-├── vite.config.ts               # Vite configuration
-├── tsconfig.json                # TypeScript configuration
-└── package.json                 # Frontend dependencies
+│   ├── geminiService.ts           # Video analysis AI
+│   ├── resumeService.ts           # Resume analysis AI
+│   ├── aiWriterService.ts         # Writing tools AI
+│   └── pdfService.ts              # PDF processing utilities
+├── server/                        # Backend server
+│   ├── index.js                   # Express server with rate limiting & queue
+│   ├── aiClient.js                # Gemini API client with retries
+│   ├── package.json               # Server dependencies
+│   └── .env                       # Environment variables (create this!)
+├── ThemeContext.tsx               # Dark/Light mode context
+├── LanguageContext.tsx            # Multi-language support
+├── App.tsx                        # Main app with routing & intro animation
+├── types.ts                       # TypeScript definitions
+├── constants.ts                   # App constants
+├── translations.ts                # Language translations
+├── index.tsx                      # React entry point
+├── index.html                     # HTML template
+├── vite.config.ts                 # Vite configuration
+├── tsconfig.json                  # TypeScript configuration
+└── package.json                   # Frontend dependencies
 ```
 
 ---
