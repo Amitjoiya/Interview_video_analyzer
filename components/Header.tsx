@@ -42,73 +42,79 @@ export const Header: React.FC = () => {
   return (
     <header className={`relative backdrop-blur-xl border-b sticky top-0 z-50 overflow-hidden transition-colors duration-300 ${
       isDark 
-        ? 'bg-slate-900/80 border-slate-800' 
+        ? 'bg-slate-900/70 border-slate-800/50' 
         : 'bg-white/80 border-slate-200'
     }`}>
-      {/* Animated background elements */}
+      {/* Premium animated background */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className={`absolute -top-4 -left-4 w-24 h-24 rounded-full blur-xl ${isDark ? 'bg-indigo-500/5' : 'bg-indigo-500/10'}`}></div>
-        <div className={`absolute top-0 right-1/4 w-32 h-32 rounded-full blur-xl ${isDark ? 'bg-purple-500/5' : 'bg-purple-500/10'}`}></div>
+        {/* Gradient orbs */}
+        <div className={`absolute -top-10 -left-10 w-40 h-40 rounded-full blur-3xl ${isDark ? 'bg-indigo-500/10' : 'bg-indigo-500/15'} animate-pulse`}></div>
+        <div className={`absolute top-0 right-1/4 w-48 h-48 rounded-full blur-3xl ${isDark ? 'bg-purple-500/10' : 'bg-purple-500/15'}`} style={{ animation: 'pulse 4s ease-in-out infinite 1s' }}></div>
+        <div className={`absolute -top-5 right-10 w-32 h-32 rounded-full blur-2xl ${isDark ? 'bg-pink-500/5' : 'bg-pink-500/10'}`} style={{ animation: 'pulse 3s ease-in-out infinite 0.5s' }}></div>
         
-        {/* Moving gradient line */}
-        <div className={`absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent to-transparent ${isDark ? 'via-indigo-500/50' : 'via-indigo-500/30'}`}></div>
+        {/* Premium gradient border line */}
+        <div className="absolute bottom-0 left-0 right-0 h-[1px]">
+          <div className={`w-full h-full bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent ${isDark ? '' : 'opacity-50'}`}></div>
+        </div>
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl blur-sm opacity-50"></div>
-              <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-2.5 rounded-xl shadow-lg">
-                <Brain className="w-6 h-6 text-white" />
+        <div className="flex justify-between h-18 py-3 items-center">
+          {/* Premium Logo Section */}
+          <div className="flex items-center gap-4">
+            <div className="relative group">
+              {/* Glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl blur-md opacity-60 group-hover:opacity-100 transition-opacity"></div>
+              {/* Logo container */}
+              <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-3 rounded-2xl shadow-lg shadow-indigo-500/25">
+                <Brain className="w-7 h-7 text-white" />
               </div>
-            
             </div>
             <div>
-              <h1 className={`text-xl font-bold tracking-tight flex items-center gap-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              <h1 className={`text-2xl font-bold tracking-tight flex items-center gap-2 ${isDark ? 'text-white' : 'text-slate-900'}`} style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
                 {t.header.title}
                 <span 
                   onClick={() => {
                     localStorage.removeItem('apex7_intro_seen');
                     window.location.reload();
                   }}
-                  className="text-xs bg-gradient-to-r from-indigo-400 to-purple-400 text-transparent bg-clip-text font-semibold cursor-pointer hover:opacity-70"
+                  className="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 text-indigo-300 font-semibold cursor-pointer hover:opacity-70 transition-opacity"
                   title="Click to replay intro"
                 >v7.0</span>
               </h1>
-              <p className={`text-xs font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t.header.tagline}</p>
+              <p className={`text-sm font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t.header.tagline}</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {/* Theme Toggle */}
             <ThemeToggle />
             
-            {/* Language Switcher - Always Visible */}
+            {/* Premium Language Switcher */}
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setShowLangDropdown(!showLangDropdown)}
-                className={`flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-xl border transition-all ${
+                className={`flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl border transition-all duration-300 ${
                   isDark 
-                    ? 'text-slate-300 bg-slate-800/50 backdrop-blur-sm border-slate-700 hover:border-indigo-500/50 hover:bg-slate-700/50'
-                    : 'text-slate-700 bg-white border-slate-200 hover:border-indigo-500/50 hover:bg-slate-50 shadow-sm'
+                    ? 'text-slate-300 bg-slate-800/60 backdrop-blur-xl border-slate-700/50 hover:border-indigo-500/50 hover:bg-slate-700/60 hover:shadow-lg hover:shadow-indigo-500/10'
+                    : 'text-slate-700 bg-white border-slate-200 hover:border-indigo-500/50 hover:bg-slate-50 shadow-sm hover:shadow-md'
                 }`}
               >
                 <Globe className="w-4 h-4 text-indigo-400" />
                 <span className="text-lg">{currentLang?.flag}</span>
                 <span className="hidden sm:inline">{currentLang?.nativeName}</span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${showLangDropdown ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${showLangDropdown ? 'rotate-180' : ''}`} />
               </button>
 
-              {/* Dropdown Menu */}
+              {/* Premium Dropdown Menu */}
               {showLangDropdown && (
-                <div className={`absolute right-0 mt-2 w-64 backdrop-blur-xl rounded-2xl border shadow-2xl py-2 z-50 max-h-96 overflow-y-auto ${
+                <div className={`absolute right-0 mt-3 w-72 backdrop-blur-2xl rounded-2xl border shadow-2xl py-2 z-50 max-h-96 overflow-y-auto ${
                   isDark 
-                    ? 'bg-slate-900/95 border-slate-700 shadow-black/50'
+                    ? 'bg-slate-900/95 border-slate-700/50 shadow-black/50'
                     : 'bg-white border-slate-200 shadow-slate-200/50'
                 }`}>
-                  <div className={`px-3 py-2 border-b ${isDark ? 'border-slate-700' : 'border-slate-200'}`}>
-                    <p className={`text-xs font-medium uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Select Language</p>
+                  <div className={`px-4 py-3 border-b ${isDark ? 'border-slate-700/50' : 'border-slate-200'}`}>
+                    <p className={`text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-indigo-400' : 'text-indigo-600'}`}>Select Language</p>
                   </div>
                   <div className="py-1">
                     {LANG_OPTIONS.map((lang) => (
@@ -118,17 +124,19 @@ export const Header: React.FC = () => {
                           setLanguage(lang.code);
                           setShowLangDropdown(false);
                         }}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors ${
-                          isDark ? 'hover:bg-slate-800/50' : 'hover:bg-slate-100'
-                        } ${language === lang.code ? (isDark ? 'bg-indigo-500/10' : 'bg-indigo-50') : ''}`}
+                        className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all duration-200 ${
+                          isDark ? 'hover:bg-slate-800/70' : 'hover:bg-slate-100'
+                        } ${language === lang.code ? (isDark ? 'bg-indigo-500/15 border-l-2 border-indigo-500' : 'bg-indigo-50 border-l-2 border-indigo-500') : 'border-l-2 border-transparent'}`}
                       >
-                        <span className="text-xl">{lang.flag}</span>
+                        <span className="text-2xl">{lang.flag}</span>
                         <div className="flex-1">
-                          <p className={`text-sm font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}>{lang.name}</p>
+                          <p className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{lang.name}</p>
                           <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{lang.nativeName}</p>
                         </div>
                         {language === lang.code && (
-                          <Check className="w-4 h-4 text-green-400" />
+                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center">
+                            <Check className="w-3.5 h-3.5 text-white" />
+                          </div>
                         )}
                       </button>
                     ))}
@@ -137,17 +145,21 @@ export const Header: React.FC = () => {
               )}
             </div>
 
-            <div className={`hidden md:flex items-center gap-2 text-sm font-medium backdrop-blur-sm px-4 py-2 rounded-full border ${
+            {/* Premium Status Badges */}
+            <div className={`hidden md:flex items-center gap-2 text-sm font-medium backdrop-blur-xl px-4 py-2.5 rounded-xl border ${
               isDark 
-                ? 'text-slate-300 bg-slate-800/50 border-slate-700'
+                ? 'text-slate-300 bg-slate-800/60 border-slate-700/50'
                 : 'text-slate-700 bg-white border-slate-200 shadow-sm'
             }`}>
-              <Activity className="w-4 h-4 text-green-400" />
+              <div className="relative">
+                <span className="absolute inset-0 w-3 h-3 bg-green-400 rounded-full animate-ping opacity-50"></span>
+                <Activity className="w-4 h-4 text-green-400 relative" />
+              </div>
               <span>{t.header.neuralCore}</span>
             </div>
-            <div className={`hidden lg:flex items-center gap-2 text-sm font-medium bg-gradient-to-r px-4 py-2 rounded-full border ${
+            <div className={`hidden lg:flex items-center gap-2 text-sm font-medium bg-gradient-to-r px-4 py-2.5 rounded-xl border ${
               isDark 
-                ? 'text-slate-300 from-indigo-500/10 to-purple-500/10 border-indigo-500/20'
+                ? 'text-slate-300 from-indigo-500/15 to-purple-500/15 border-indigo-500/30'
                 : 'text-slate-700 from-indigo-50 to-purple-50 border-indigo-200'
             }`}>
               <Zap className="w-4 h-4 text-yellow-400" />

@@ -7,13 +7,15 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-6.2-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 ![Gemini AI](https://img.shields.io/badge/Gemini-2.5_Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-8.0-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
+![Razorpay](https://img.shields.io/badge/Razorpay-Payments-0C2340?style=for-the-badge&logo=razorpay&logoColor=white)
 ![Three.js](https://img.shields.io/badge/Three.js-r182-000000?style=for-the-badge&logo=three.js&logoColor=white)
 ![OGL](https://img.shields.io/badge/OGL-WebGL-FF6B6B?style=for-the-badge&logo=webgl&logoColor=white)
 ![Motion](https://img.shields.io/badge/Motion-12.23-FF4154?style=for-the-badge&logo=framer&logoColor=white)
 
-**🚀 Complete AI-Powered Interview Success Platform with Stunning 3D Animations**
+**🚀 Complete AI-Powered Interview Success Platform with Authentication, Payments & Stunning 3D Animations**
 
-[Features](#-features) • [All Tools](#-all-tools-9-features) • [Animations](#-background-animations--visual-effects) • [Getting Started](#-getting-started) • [Tech Stack](#-tech-stack)
+[Features](#-features) • [All Tools](#-all-tools-9-features) • [Auth & Payments](#-authentication--payments) • [Animations](#-background-animations--visual-effects) • [Getting Started](#-getting-started) • [Tech Stack](#-tech-stack)
 
 </div>
 
@@ -50,6 +52,47 @@ APEX-7 (Advanced Performance Evaluation eXpert - 7th Generation) is a **comprehe
 | **💼 LinkedIn Optimizer** | Optimize your LinkedIn profile for recruiters - headline, summary, keywords, and skills suggestions |
 | **❓ Interview Q&A Bank** | Role-specific interview questions with model answers - behavioral, technical, and situational |
 | **💰 Salary Negotiation Coach** | Market salary insights in ₹ LPA, negotiation scripts, counter-offer strategies, and email templates |
+
+---
+
+## 🔐 Authentication & Payments
+
+### 👤 User Authentication
+
+APEX-7 includes a complete authentication system with:
+
+| Feature | Description |
+|---------|-------------|
+| **📝 Registration** | Create account with name, email, and password |
+| **🔑 Login** | Secure JWT-based authentication |
+| **🔒 Password Hashing** | bcrypt encryption for security |
+| **💾 Session Persistence** | LocalStorage token management |
+| **🔄 Auto-refresh** | User data auto-refresh on app load |
+
+### 💳 Credit System & Wallet
+
+| Feature | Description |
+|---------|-------------|
+| **💰 Credit Wallet** | Virtual credits for using AI features |
+| **📊 Transaction History** | Track all credit usage and purchases |
+| **🛒 Credit Packages** | Buy credits in various bundles |
+| **📈 Usage Tracking** | Per-feature credit costs |
+
+### 💎 Subscription Plans
+
+| Plan | Features |
+|------|----------|
+| **Free** | Basic access with limited credits |
+| **Pro** | Monthly/Yearly subscription with more credits |
+| **Enterprise** | Unlimited access for teams |
+
+### 💵 Razorpay Payment Integration
+
+- ✅ Secure payment processing via Razorpay
+- ✅ Support for UPI, Cards, NetBanking, Wallets
+- ✅ Order creation & verification
+- ✅ Webhook support for payment confirmation
+- ✅ Indian Rupee (₹) pricing
 
 ---
 
@@ -128,6 +171,9 @@ Professional system initialization sequence with:
 - 🔮 **3D WebGL Background** - Stunning prism animation with mouse interaction
 - 🔄 **Rotating Text** - Animated text transitions in hero section
 - 🤖 **AI Chatbot** - Integrated AI assistant for help
+- 👤 **User Auth** - Login/Register with JWT authentication
+- 💰 **Wallet System** - Credit-based usage with transaction history
+- 💎 **Subscription Plans** - Free, Pro, and Enterprise tiers
 
 ---
 
@@ -206,6 +252,12 @@ This will install:
 - **multer** - File upload handling
 - **cors** - Cross-origin resource sharing
 - **dotenv** - Environment variables
+- **mongoose** - MongoDB ODM
+- **bcryptjs** - Password hashing
+- **jsonwebtoken** - JWT authentication
+- **cookie-parser** - Cookie handling
+- **razorpay** - Payment gateway
+- **pdf-parse** - PDF text extraction
 - **ioredis & bullmq** - Redis queue (optional)
 
 #### Step 4: Configure Environment Variables
@@ -214,10 +266,24 @@ Create a `.env` file in the `server` directory:
 
 ```bash
 # server/.env
+
+# AI Configuration
 GEMINI_API_KEY='your_gemini_api_key_here'
-REDIS_URL='redis://127.0.0.1:6379'    # Optional - for request queuing
-MAX_CONCURRENT=1                       # Optional - concurrent request limit
-MAX_REQUESTS_PER_MINUTE=10            # Optional - rate limit per IP
+
+# Database
+MONGODB_URI='mongodb://localhost:27017/apex7'
+
+# Authentication
+JWT_SECRET='your_super_secret_jwt_key_here'
+
+# Razorpay Payment Gateway
+RAZORPAY_KEY_ID='your_razorpay_key_id'
+RAZORPAY_KEY_SECRET='your_razorpay_key_secret'
+
+# Optional - Redis Queue
+REDIS_URL='redis://127.0.0.1:6379'
+MAX_CONCURRENT=1
+MAX_REQUESTS_PER_MINUTE=10
 ```
 
 > ⚠️ **Important**: Never commit your `.env` file to version control!
@@ -259,6 +325,8 @@ node index.js
 | API key not working | Check `.env` file format, restart server |
 | Port already in use | Change port in `vite.config.ts` or server `index.js` |
 | Redis connection error | Redis is optional, server will use in-memory queue |
+| MongoDB connection error | Ensure MongoDB is running locally or use MongoDB Atlas |
+| Razorpay not working | Check API keys in `.env`, ensure test mode for development |
 
 ### 📋 Available Scripts
 
@@ -277,6 +345,10 @@ node server/index.js  # backend proxy (optional)
 ### Server config (env variables)
 
 - `GEMINI_API_KEY` - your Gemini API key
+- `MONGODB_URI` - MongoDB connection string (required for auth & wallet)
+- `JWT_SECRET` - secret key for JWT token signing
+- `RAZORPAY_KEY_ID` - Razorpay API key ID
+- `RAZORPAY_KEY_SECRET` - Razorpay API secret
 - `REDIS_URL` - redis connection string (optional, used by server queue; fallback to in-memory queue if not available)
 - `MAX_CONCURRENT` - server-side concurrency limit (default 1) to avoid hammering the provider
 - `MAX_REQUESTS_PER_MINUTE` - per-IP rate limit to protect provider quota (default 10)
@@ -313,9 +385,15 @@ node server/index.js  # backend proxy (optional)
 |------------|---------|
 | **Express 4.18** | Node.js web server |
 | **@google/genai** | Gemini AI SDK |
+| **mongoose 8.0** | MongoDB ODM for data modeling |
+| **bcryptjs** | Password hashing & security |
+| **jsonwebtoken** | JWT authentication tokens |
+| **razorpay** | Payment gateway integration |
 | **multer** | File upload handling |
 | **cors** | Cross-origin resource sharing |
+| **cookie-parser** | Cookie management |
 | **dotenv** | Environment variable management |
+| **pdf-parse** | PDF text extraction |
 | **ioredis** | Redis client for queuing |
 | **bullmq** | Job queue for request management |
 
@@ -338,6 +416,9 @@ apex-7/
 │   ├── InterviewQABank.tsx        # Q&A generation
 │   ├── SalaryCoach.tsx            # Salary negotiation
 │   ├── AIChatBot.tsx              # AI assistant chatbot
+│   ├── AuthModal.tsx              # 🔐 Login/Register modal
+│   ├── WalletDashboard.tsx        # 💰 Credit wallet & transactions
+│   ├── PricingPlans.tsx           # 💎 Subscription plans
 │   ├── Prism.tsx                  # 🔮 3D WebGL Prism animation (OGL)
 │   ├── RotatingText.tsx           # 🔄 Animated rotating text (Motion)
 │   ├── ThemeToggle.tsx            # Dark/Light mode toggle
@@ -351,7 +432,19 @@ apex-7/
 │   ├── index.js                   # Express server with rate limiting & queue
 │   ├── aiClient.js                # Gemini API client with retries
 │   ├── package.json               # Server dependencies
+│   ├── middleware/
+│   │   ├── auth.js                # 🔐 JWT authentication middleware
+│   │   └── creditCheck.js         # 💰 Credit balance verification
+│   ├── models/
+│   │   ├── User.js                # 👤 User schema (auth, wallet, subscription)
+│   │   └── Transaction.js         # 💳 Transaction schema
+│   ├── routes/
+│   │   ├── auth.js                # 🔑 Login/Register/Me routes
+│   │   ├── wallet.js              # 💰 Credit & transaction routes
+│   │   ├── payment.js             # 💵 Razorpay payment routes
+│   │   └── subscription.js        # 💎 Subscription management
 │   └── .env                       # Environment variables (create this!)
+├── AuthContext.tsx                # 🔐 Authentication context provider
 ├── ThemeContext.tsx               # Dark/Light mode context
 ├── LanguageContext.tsx            # Multi-language support
 ├── App.tsx                        # Main app with routing & intro animation
@@ -371,11 +464,15 @@ apex-7/
 
 - ✅ **All-in-One Platform** - 9 powerful tools in one place
 - ✅ **100% AI-Powered** - Gemini 2.5 Flash for accurate analysis
+- ✅ **User Authentication** - Secure JWT-based login/register system
+- ✅ **Credit Wallet System** - Pay-as-you-go with transaction history
+- ✅ **Subscription Plans** - Free, Pro, and Enterprise tiers
+- ✅ **Razorpay Payments** - Secure UPI, Cards, NetBanking support
+- ✅ **MongoDB Backend** - Persistent user data and transactions
 - ✅ **Stunning 3D Animations** - WebGL Prism background with mouse interaction
 - ✅ **Cinematic Experience** - Professional intro sequence with phased animations
-- ✅ **Indian Market Focus** - Salary in ₹ LPA, Indian cities
+- ✅ **Indian Market Focus** - Salary in ₹ LPA, Indian cities, Razorpay
 - ✅ **Privacy First** - Client-side processing where possible
-- ✅ **Free to Use** - Just need Gemini API key
 - ✅ **Dark/Light Mode** - Beautiful themed UI
 - ✅ **Multi-language** - English and Hindi support
 - ✅ **AI Chatbot** - Built-in assistant for help
@@ -430,6 +527,8 @@ Edit the RotatingText component usage:
 - 📊 **Progress Analytics** - Track your preparation journey
 - 🎯 **Mock Interview Simulator** - AI-powered live practice
 - 📱 **PWA Support** - Install as mobile app
+- 🏢 **Team Management** - Enterprise admin dashboard
+- 📧 **Email Notifications** - Payment & usage alerts
 
 ---
 
@@ -466,6 +565,9 @@ This project is licensed under the MIT License.
 - The repository no longer contains any sensitive API keys. 
 - Server environment variables should be added locally in `server/.env`.
 - Use `server/.env.example` as a template and never commit your `.env` files to the repo.
+- Passwords are hashed using bcryptjs before storing in MongoDB.
+- JWT tokens are used for secure session management.
+- Razorpay payments are verified server-side with signature validation.
 
 ---
 

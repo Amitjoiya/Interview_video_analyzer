@@ -3,6 +3,8 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const multer = require('multer');
+const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser');
 const upload = multer();
 
 dotenv.config();
@@ -13,8 +15,22 @@ const IORedis = require('ioredis');
 const { Queue, Worker } = require('bullmq');
 const aiClient = require('./aiClient');
 
+// Import routes
+const authRoutes = require('./routes/auth');
+const walletRoutes = require('./routes/wallet');
+const subscriptionRoutes = require('./routes/subscription');
+const paymentRoutes = require('./routes/payment');
+
+// Import middleware
+const { protect, optionalAuth } = require('./middleware/auth');
+const { checkCredits } = require('./middleware/creditCheck');
+
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true
+}));
+app.use(cookieParser());
 app.use(bodyParser.json({ limit: '10mb' }));
 
 const PORT = process.env.PORT || 5001;
@@ -500,17 +516,44 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', maxConcurrent: MAX_CONCURRENT, maxRequestsPerMinute: MAX_REQUESTS_PER_MINUTE, nodeVersion: process.version });
 });
 
+// Auth & Wallet Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/wallet', walletRoutes);
+app.use('/api/subscription', subscriptionRoutes);
+app.use('/api/payment', paymentRoutes);
+
+// MongoDB Connection
+const connectDB = async () => {
+  try {
+    if (process.env.MONGODB_URI) {
+      await mongoose.connect(process.env.MONGODB_URI);
+      console.log('MongoDB connected successfully');
+    } else {
+      console.warn('MONGODB_URI not set - running without database (wallet features disabled)');
+    }
+  } catch (error) {
+    console.error('MongoDB connection error:', error.message);
+    console.warn('Continuing without MongoDB - wallet features will be disabled');
+  }
+};
+
 // Ensure queue initialization is done first, then start server to avoid any
 // race conditions. This ensures we know whether Redis or local fallback is used.
-initQueue().then(() => {
+initQueue().then(async () => {
   console.log(`Queue mode: ${redisAvailable ? 'redis' : 'local in-memory'}`);
+  
+  // Connect to MongoDB
+  await connectDB();
+  
   app.listen(PORT, () => {
     console.log(`Backend proxy running on port ${PORT}`);
   });
 }).catch((err) => {
   console.error('Failed to init queue; starting server with local fallback', err);
   redisAvailable = false;
-  app.listen(PORT, () => {
-    console.log(`Backend proxy running on port ${PORT} (local fallback)`);
+  connectDB().then(() => {
+    app.listen(PORT, () => {
+      console.log(`Backend proxy running on port ${PORT} (local fallback)`);
+    });
   });
 });

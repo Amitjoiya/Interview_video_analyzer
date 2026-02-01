@@ -11,6 +11,10 @@ import { LinkedInOptimizer } from './components/LinkedInOptimizer';
 import { InterviewQABank } from './components/InterviewQABank';
 import { SalaryCoach } from './components/SalaryCoach';
 import { AIChatBot } from './components/AIChatBot';
+import { AuthModal } from './components/AuthModal';
+import { WalletDashboard, CreditBalance } from './components/WalletDashboard';
+import { PricingPlans } from './components/PricingPlans';
+import { AuthProvider, useAuth } from './AuthContext';
 import { analyzeInterviewVideo, AnalysisOptions, clearAnalysisCache } from './services/geminiService';
 import { analyzeResume } from './services/resumeService';
 import { AnalysisResponse, AppState, InterviewMode, ResumeAnalysis, InterviewTarget } from './types';
@@ -18,7 +22,7 @@ import { INTERVIEW_MODES } from './constants';
 import { useLanguage } from './LanguageContext';
 import { 
   AlertTriangle, RefreshCw, Sparkles, Target, Brain, Mic, Eye, Scan, Fingerprint, Radio, 
-  Activity, Shield, Award, ChevronRight, Briefcase, Code, TrendingUp, Heart, Scale, DollarSign, Palette, Globe, Check, ArrowRight, Zap, Languages, FileText, Video, Upload, Play, Camera, Menu, X, PenTool, Search, Mail, Linkedin, MessageSquare, BadgeDollarSign
+  Activity, Shield, Award, ChevronRight, Briefcase, Code, TrendingUp, Heart, Scale, DollarSign, Palette, Globe, Check, ArrowRight, Zap, Languages, FileText, Video, Upload, Play, Camera, Menu, X, PenTool, Search, Mail, Linkedin, MessageSquare, BadgeDollarSign, Wallet, Crown, LogIn, LogOut, User, MonitorPlay
 } from 'lucide-react';
 import RotatingText from './components/RotatingText';
 import Prism from './components/Prism';
@@ -180,6 +184,14 @@ const IntroScreen: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
 
 const App: React.FC = () => {
   const { t } = useLanguage(); // Get translations
+  const { user, isAuthenticated, logout, isLoading: authLoading } = useAuth();
+  
+  // Auth & Wallet Modal States
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  
   // Show intro only if user hasn't seen it before
   const [showIntro, setShowIntro] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -208,10 +220,27 @@ const App: React.FC = () => {
   // Feature Selection
   const [selectedFeature, setSelectedFeature] = useState<'video' | 'resume' | 'pdf' | 'coverletter' | 'jobanalyzer' | 'emailwriter' | 'linkedin' | 'qabank' | 'salarycoach' | null>(null);
 
-  // Browser History Support - Handle back/forward buttons
+  // Open auth modal helper functions
+  const openLogin = () => {
+    setAuthMode('login');
+    setShowAuthModal(true);
+  };
+  
+  const openRegister = () => {
+    setAuthMode('register');
+    setShowAuthModal(true);
+  };
+
+  // Browser History Support - Handle back/forward buttons and initial URL
   useEffect(() => {
-    // Set initial state in history
-    if (!window.location.hash) {
+    // Check initial hash on page load to support opening in new tabs
+    const hash = window.location.hash.replace('#', '');
+    const validFeatures = ['video', 'resume', 'pdf', 'coverletter', 'jobanalyzer', 'emailwriter', 'linkedin', 'qabank', 'salarycoach'];
+    
+    if (validFeatures.includes(hash)) {
+      setSelectedFeature(hash as any);
+      setAppState(AppState.IDLE);
+    } else if (!window.location.hash) {
       window.history.replaceState({ page: 'home' }, '', '#home');
     }
     
@@ -380,49 +409,141 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 pb-20 relative overflow-hidden">
-      {/* Prism Background */}
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+        initialMode={authMode}
+      />
+      
+      {/* Wallet Modal */}
+      <WalletDashboard 
+        isOpen={showWalletModal} 
+        onClose={() => setShowWalletModal(false)} 
+      />
+      
+      {/* Pricing Modal */}
+      <PricingPlans 
+        isOpen={showPricingModal} 
+        onClose={() => setShowPricingModal(false)} 
+      />
+      
+      {/* Premium Prism Background */}
       <div className="fixed inset-0 z-0">
         <Prism 
           animationType="hover" 
-          hueShift={0.5} 
-          glow={0.8} 
-          bloom={1.0} 
-          scale={3.0}
-          noise={0.2}
-          colorFrequency={1.0}
-          hoverStrength={1.5}
-          inertia={0.08}
+          hueShift={0.3} 
+          glow={0.6} 
+          bloom={0.8} 
+          scale={2.5}
+          noise={0.15}
+          colorFrequency={0.8}
+          hoverStrength={1.2}
+          inertia={0.06}
           suspendWhenOffscreen={true}
         />
       </div>
       
-      {/* Animated Background */}
-        <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        {/* Gradient Mesh */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-950/80 via-indigo-950/30 to-slate-950/80"></div>
+      {/* Premium Animated Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        {/* Deep Gradient Mesh */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-indigo-950/50 to-purple-950/30"></div>
         
-        {/* Animated Orbs */}
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-radial from-indigo-500/10 via-purple-500/5 to-transparent rounded-full blur-3xl animate-float-slow"></div>
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-radial from-purple-500/10 via-pink-500/5 to-transparent rounded-full blur-3xl animate-float-slow-delayed"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gradient-radial from-cyan-500/5 via-blue-500/3 to-transparent rounded-full blur-3xl animate-pulse-slow"></div>
+        {/* Large Animated Blobs */}
+        <div className="absolute -top-40 -right-40 w-[700px] h-[700px] bg-gradient-to-br from-indigo-600/20 via-purple-600/10 to-transparent rounded-full blur-3xl animate-blob"></div>
+        <div className="absolute -bottom-40 -left-40 w-[600px] h-[600px] bg-gradient-to-br from-purple-600/15 via-pink-600/10 to-transparent rounded-full blur-3xl animate-blob" style={{ animationDelay: '-3s' }}></div>
+        <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] bg-gradient-to-br from-cyan-600/10 via-blue-600/5 to-transparent rounded-full blur-3xl animate-blob" style={{ animationDelay: '-6s' }}></div>
         
-        {/* Grid Pattern */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: `linear-gradient(rgba(99, 102, 241, 0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(99, 102, 241, 0.5) 1px, transparent 1px)`,
-          backgroundSize: '60px 60px',
+        {/* Premium Grid Pattern */}
+        <div className="absolute inset-0 opacity-[0.02]" style={{
+          backgroundImage: `
+            linear-gradient(rgba(99, 102, 241, 0.8) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(99, 102, 241, 0.8) 1px, transparent 1px)
+          `,
+          backgroundSize: '80px 80px',
         }}></div>
         
-        {/* Floating Particles */}
-        <div className="absolute w-1 h-1 bg-indigo-500/30 rounded-full animate-float-particle" style={{ left: '10%', top: '20%', animationDelay: '0s' }}></div>
-        <div className="absolute w-1 h-1 bg-purple-500/30 rounded-full animate-float-particle" style={{ left: '30%', top: '40%', animationDelay: '2s' }}></div>
-        <div className="absolute w-1 h-1 bg-cyan-500/30 rounded-full animate-float-particle" style={{ left: '70%', top: '30%', animationDelay: '4s' }}></div>
-        <div className="absolute w-1 h-1 bg-pink-500/30 rounded-full animate-float-particle" style={{ left: '80%', top: '60%', animationDelay: '6s' }}></div>
-        <div className="absolute w-1 h-1 bg-indigo-500/30 rounded-full animate-float-particle" style={{ left: '20%', top: '70%', animationDelay: '8s' }}></div>
-        <div className="absolute w-1 h-1 bg-purple-500/30 rounded-full animate-float-particle" style={{ left: '60%', top: '80%', animationDelay: '10s' }}></div>
+        {/* Radial Glow Center */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-indigo-500/5 via-transparent to-transparent rounded-full"></div>
         
-        {/* Scanning Lines */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent animate-scan-horizontal-slow"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent animate-scan-horizontal-slow-reverse"></div>
+        {/* Floating Orbs */}
+        {[...Array(12)].map((_, i) => (
+          <div 
+            key={i}
+            className="absolute w-2 h-2 rounded-full animate-float"
+            style={{ 
+              left: `${10 + (i * 8)}%`, 
+              top: `${15 + (i * 7) % 70}%`,
+              background: `linear-gradient(135deg, ${['#6366f1', '#8b5cf6', '#d946ef', '#06b6d4', '#10b981'][i % 5]}40, transparent)`,
+              animationDelay: `${i * 0.5}s`,
+              animationDuration: `${6 + (i % 4)}s`
+            }}
+          />
+        ))}
+        
+        {/* Premium Light Rays */}
+        <div className="absolute top-0 left-1/4 w-px h-[50vh] bg-gradient-to-b from-indigo-500/20 via-indigo-500/5 to-transparent"></div>
+        <div className="absolute top-0 right-1/3 w-px h-[40vh] bg-gradient-to-b from-purple-500/20 via-purple-500/5 to-transparent"></div>
+      </div>
+
+      {/* Premium User Controls Bar */}
+      <div className="fixed top-4 right-4 z-50 flex items-center gap-3">
+        {isAuthenticated ? (
+          <>
+            {/* Credit Balance - Premium Style */}
+            <CreditBalance onClick={() => setShowWalletModal(true)} />
+            
+            {/* Upgrade Button - Premium Glow */}
+            {user?.subscription?.plan === 'free' && (
+              <button
+                onClick={() => setShowPricingModal(true)}
+                className="group relative flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 hover:from-amber-400 hover:via-orange-400 hover:to-red-400 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 hover:scale-105"
+              >
+                <Crown className="w-4 h-4" />
+                <span className="hidden sm:inline">Upgrade to Pro</span>
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-amber-400/0 via-white/20 to-amber-400/0 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              </button>
+            )}
+            
+            {/* Premium User Menu */}
+            <div className="flex items-center gap-3 pl-3 border-l border-slate-700/50">
+              <div className="hidden sm:block text-right">
+                <p className="text-sm font-semibold text-white">{user?.name}</p>
+                <p className="text-xs text-indigo-400 capitalize font-medium">{user?.subscription?.plan} Plan</p>
+              </div>
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full blur-sm opacity-30"></div>
+                <div className="relative w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm border-2 border-indigo-400/30">
+                  {user?.name?.charAt(0).toUpperCase()}
+                </div>
+              </div>
+              <button
+                onClick={logout}
+                className="p-2.5 glass-dark hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-xl transition-all hover:scale-105"
+                title="Logout"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center gap-2 p-1 glass-dark rounded-2xl">
+            <button
+              onClick={openLogin}
+              className="flex items-center gap-2 px-5 py-2.5 text-slate-300 hover:text-white font-medium transition-all hover:bg-white/5 rounded-xl"
+            >
+              <LogIn className="w-4 h-4" />
+              <span>Login</span>
+            </button>
+            <button
+              onClick={openRegister}
+              className="btn-premium flex items-center gap-2 px-5 py-2.5 text-white font-semibold rounded-xl"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>Start Free</span>
+            </button>
+          </div>
+        )}
       </div>
 
       <Header />
@@ -430,245 +551,352 @@ const App: React.FC = () => {
       <main className="container mx-auto px-4 relative z-10">
         
         {appState === AppState.IDLE && (
-           <div className="flex flex-col items-center justify-center min-h-[80vh] animate-fade-in px-4">
-             <div className="text-center max-w-4xl mx-auto mb-10">
-               <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full mb-6 animate-bounce-subtle">
+           <div className="flex flex-col items-center justify-center min-h-[90vh] animate-fade-in px-4 py-16">
+             {/* Premium Hero Section */}
+             <div className="text-center max-w-5xl mx-auto mb-16 relative">
+               {/* Decorative Elements */}
+               <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-96 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 rounded-full blur-3xl opacity-50"></div>
+               
+               {/* Premium Badge */}
+               <div className="relative inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 border border-indigo-500/30 rounded-full mb-8 backdrop-blur-sm shadow-lg shadow-indigo-500/5">
+                 <div className="flex items-center gap-1">
+                   <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                   <span className="text-xs text-green-400 font-medium tracking-wider uppercase">Live</span>
+                 </div>
+                 <div className="w-px h-4 bg-slate-700"></div>
                  <Sparkles className="w-4 h-4 text-indigo-400" />
-                 <span className="text-sm font-semibold text-indigo-300">APEX-7 Neural Analysis Engine</span>
+                 <span className="text-sm font-semibold bg-gradient-to-r from-indigo-300 via-purple-300 to-pink-300 bg-clip-text text-transparent tracking-wide">APEX-7 Neural Analysis Engine</span>
                </div>
-               <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-6 tracking-tight leading-tight">
-                 Your AI-Powered
-                 <span className="block bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                   Interview Success <span className="inline-block">
-                     <RotatingText
-                       texts={["Partner", "Coach", "Companion", "Advisor"]}
-                       mainClassName="px-2 sm:px-2 md:px-3 bg-cyan-300 text-black overflow-hidden py-0.5 sm:py-1 md:py-2 justify-center rounded-lg inline-block"
-                       splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
-                       rotationInterval={2000}
-                     />
-                   </span>
+               
+               {/* Main Heading with Premium Typography */}
+               <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black text-white mb-8 tracking-tight leading-[1.1]" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                 <span className="block opacity-90">Your AI-Powered</span>
+                 <span className="block mt-2">
+                   <span className="gradient-text">Interview Success</span>
                  </span>
-               </h2>
-               <p className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-                 Choose a feature to get started. Our advanced AI will help you <span className="font-semibold text-indigo-400">ace your next interview</span>.
+                 <span className="inline-block mt-4">
+                   <RotatingText
+                     texts={["Partner", "Coach", "Companion", "Advisor"]}
+                     mainClassName="px-4 sm:px-5 md:px-6 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-900 overflow-hidden py-1 sm:py-2 md:py-3 justify-center rounded-xl inline-block shadow-lg shadow-cyan-500/30 font-bold"
+                     splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
+                     rotationInterval={2000}
+                   />
+                 </span>
+               </h1>
+               
+               {/* Subtitle with Better Styling */}
+               <p className="text-xl sm:text-2xl text-slate-400 max-w-3xl mx-auto leading-relaxed mb-10" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+                 Choose a feature to get started. Our advanced AI will help you 
+                 <span className="font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent"> ace your next interview</span>.
                </p>
+               
+               {/* Stats Row */}
+               <div className="flex flex-wrap items-center justify-center gap-8 mb-12">
+                 <div className="flex items-center gap-2 text-slate-400">
+                   <span className="text-2xl font-bold text-white">50K+</span>
+                   <span className="text-sm">Users Helped</span>
+                 </div>
+                 <div className="w-px h-6 bg-slate-700 hidden sm:block"></div>
+                 <div className="flex items-center gap-2 text-slate-400">
+                   <span className="text-2xl font-bold text-white">98%</span>
+                   <span className="text-sm">Success Rate</span>
+                 </div>
+                 <div className="w-px h-6 bg-slate-700 hidden sm:block"></div>
+                 <div className="flex items-center gap-2 text-slate-400">
+                   <span className="text-2xl font-bold text-white">4.9★</span>
+                   <span className="text-sm">User Rating</span>
+                 </div>
+               </div>
              </div>
              
-             {/* Feature Selection Cards - Row 1 */}
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl mx-auto">
+             {/* Premium Feature Selection Cards - Row 1 */}
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl mx-auto">
                {/* Video Analysis Card */}
                <button
                  onClick={() => navigateToFeature('video')}
-                 className="group relative p-6 sm:p-8 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-700/50 hover:border-indigo-500/50 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-indigo-500/20 text-left"
+                 className="card-premium group relative overflow-hidden"
                >
-                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                 <div className="relative">
-                   <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-indigo-500/30 group-hover:scale-110 transition-transform">
-                     <Video className="w-8 h-8 text-white" />
+                 {/* Animated Border Gradient */}
+                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
+                 <div className="relative bg-slate-900/90 backdrop-blur-xl rounded-3xl p-8 border border-slate-700/50 group-hover:border-indigo-500/50 transition-all duration-500 h-full">
+                   {/* Glow Effect */}
+                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                   
+                   <div className="relative z-10 text-left">
+                     <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-indigo-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                       <Video className="w-8 h-8 text-white" />
+                     </div>
+                     <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-indigo-300 transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>Video Analysis</h3>
+                     <p className="text-slate-400 text-sm leading-relaxed mb-5">Upload your practice interview video for comprehensive AI analysis with facial expression detection and voice analysis.</p>
+                     <div className="flex flex-wrap gap-2">
+                       <span className="text-xs px-3 py-1.5 bg-indigo-500/20 text-indigo-300 rounded-full border border-indigo-500/30">FACS Analysis</span>
+                       <span className="text-xs px-3 py-1.5 bg-purple-500/20 text-purple-300 rounded-full border border-purple-500/30">Voice AI</span>
+                       <span className="text-xs px-3 py-1.5 bg-pink-500/20 text-pink-300 rounded-full border border-pink-500/30">12 Modules</span>
+                     </div>
                    </div>
-                   <h3 className="text-xl sm:text-2xl font-bold text-white mb-3">Video Analysis</h3>
-                   <p className="text-slate-400 text-sm sm:text-base mb-4">Upload your practice interview video for comprehensive AI analysis with facial expression detection, voice analysis, and executive feedback.</p>
-                   <div className="flex flex-wrap gap-2">
-                     <span className="text-xs px-2 py-1 bg-indigo-500/20 text-indigo-300 rounded-lg">FACS Analysis</span>
-                     <span className="text-xs px-2 py-1 bg-purple-500/20 text-purple-300 rounded-lg">Voice Biometrics</span>
-                     <span className="text-xs px-2 py-1 bg-pink-500/20 text-pink-300 rounded-lg">12 Modules</span>
+                   
+                   <div className="absolute bottom-6 right-6 w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center group-hover:bg-indigo-500 transition-all duration-300">
+                     <ArrowRight className="w-5 h-5 text-slate-500 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
                    </div>
                  </div>
-                 <ArrowRight className="absolute bottom-6 right-6 w-5 h-5 text-slate-500 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
                </button>
                
                {/* Resume Checker Card */}
                <button
                  onClick={() => navigateToFeature('resume')}
-                 className="group relative p-6 sm:p-8 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-700/50 hover:border-emerald-500/50 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-emerald-500/20 text-left"
+                 className="card-premium group relative overflow-hidden"
                >
-                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                 <div className="relative">
-                   <div className="w-16 h-16 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform">
-                     <FileText className="w-8 h-8 text-white" />
+                 <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
+                 <div className="relative bg-slate-900/90 backdrop-blur-xl rounded-3xl p-8 border border-slate-700/50 group-hover:border-emerald-500/50 transition-all duration-500 h-full">
+                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                   
+                   <div className="relative z-10 text-left">
+                     <div className="w-16 h-16 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-emerald-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                       <FileText className="w-8 h-8 text-white" />
+                     </div>
+                     <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-emerald-300 transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>Resume Checker</h3>
+                     <p className="text-slate-400 text-sm leading-relaxed mb-5">Get AI-powered resume analysis with ATS compatibility score, section feedback, and improvement suggestions.</p>
+                     <div className="flex flex-wrap gap-2">
+                       <span className="text-xs px-3 py-1.5 bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/30">ATS Score</span>
+                       <span className="text-xs px-3 py-1.5 bg-teal-500/20 text-teal-300 rounded-full border border-teal-500/30">10 Sections</span>
+                       <span className="text-xs px-3 py-1.5 bg-cyan-500/20 text-cyan-300 rounded-full border border-cyan-500/30">Keywords</span>
+                     </div>
                    </div>
-                   <h3 className="text-xl sm:text-2xl font-bold text-white mb-3">Resume Checker</h3>
-                   <p className="text-slate-400 text-sm sm:text-base mb-4">Get AI-powered resume analysis with ATS compatibility score, section-by-section feedback, and improvement suggestions.</p>
-                   <div className="flex flex-wrap gap-2">
-                     <span className="text-xs px-2 py-1 bg-emerald-500/20 text-emerald-300 rounded-lg">ATS Score</span>
-                     <span className="text-xs px-2 py-1 bg-teal-500/20 text-teal-300 rounded-lg">10 Sections</span>
-                     <span className="text-xs px-2 py-1 bg-cyan-500/20 text-cyan-300 rounded-lg">Keywords</span>
+                   
+                   <div className="absolute bottom-6 right-6 w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center group-hover:bg-emerald-500 transition-all duration-300">
+                     <ArrowRight className="w-5 h-5 text-slate-500 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
                    </div>
                  </div>
-                 <ArrowRight className="absolute bottom-6 right-6 w-5 h-5 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
                </button>
                
                {/* PDF Tools Card */}
                <button
                  onClick={() => navigateToFeature('pdf')}
-                 className="group relative p-6 sm:p-8 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-700/50 hover:border-red-500/50 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-red-500/20 text-left"
+                 className="card-premium group relative overflow-hidden"
                >
-                 <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-orange-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                 <div className="relative">
-                   <div className="w-16 h-16 bg-gradient-to-br from-red-600 to-orange-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-red-500/30 group-hover:scale-110 transition-transform">
-                     <FileText className="w-8 h-8 text-white" />
+                 <div className="absolute inset-0 bg-gradient-to-r from-red-500 via-orange-500 to-amber-500 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
+                 <div className="relative bg-slate-900/90 backdrop-blur-xl rounded-3xl p-8 border border-slate-700/50 group-hover:border-red-500/50 transition-all duration-500 h-full">
+                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                   
+                   <div className="relative z-10 text-left">
+                     <div className="w-16 h-16 bg-gradient-to-br from-red-600 to-orange-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-red-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                       <FileText className="w-8 h-8 text-white" />
+                     </div>
+                     <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-red-300 transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>PDF Tools</h3>
+                     <p className="text-slate-400 text-sm leading-relaxed mb-5">All-in-one PDF toolkit. Merge, split, compress, add watermarks, page numbers, rotate, extract and more.</p>
+                     <div className="flex flex-wrap gap-2">
+                       <span className="text-xs px-3 py-1.5 bg-red-500/20 text-red-300 rounded-full border border-red-500/30">Merge</span>
+                       <span className="text-xs px-3 py-1.5 bg-orange-500/20 text-orange-300 rounded-full border border-orange-500/30">Split</span>
+                       <span className="text-xs px-3 py-1.5 bg-amber-500/20 text-amber-300 rounded-full border border-amber-500/30">Compress</span>
+                     </div>
                    </div>
-                   <h3 className="text-xl sm:text-2xl font-bold text-white mb-3">PDF Tools</h3>
-                   <p className="text-slate-400 text-sm sm:text-base mb-4">All-in-one PDF toolkit. Merge, split, compress, add watermarks, page numbers, rotate, extract and more.</p>
-                   <div className="flex flex-wrap gap-2">
-                     <span className="text-xs px-2 py-1 bg-red-500/20 text-red-300 rounded-lg">Merge</span>
-                     <span className="text-xs px-2 py-1 bg-orange-500/20 text-orange-300 rounded-lg">Split</span>
-                     <span className="text-xs px-2 py-1 bg-amber-500/20 text-amber-300 rounded-lg">Compress</span>
+                   
+                   <div className="absolute bottom-6 right-6 w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center group-hover:bg-red-500 transition-all duration-300">
+                     <ArrowRight className="w-5 h-5 text-slate-500 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
                    </div>
                  </div>
-                 <ArrowRight className="absolute bottom-6 right-6 w-5 h-5 text-slate-500 group-hover:text-red-400 group-hover:translate-x-1 transition-all" />
                </button>
              </div>
              
-             {/* Feature Selection Cards - Row 2 (AI Writing Tools) */}
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl mx-auto mt-6">
+             {/* Premium Feature Cards - Row 2 (AI Writing Tools) */}
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl mx-auto mt-8">
                {/* Cover Letter Generator Card */}
                <button
                  onClick={() => navigateToFeature('coverletter')}
-                 className="group relative p-6 sm:p-8 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-700/50 hover:border-blue-500/50 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-blue-500/20 text-left"
+                 className="card-premium group relative overflow-hidden"
                >
-                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                 <div className="relative">
-                   <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform">
-                     <PenTool className="w-8 h-8 text-white" />
+                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-cyan-500 to-sky-500 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
+                 <div className="relative bg-slate-900/90 backdrop-blur-xl rounded-3xl p-8 border border-slate-700/50 group-hover:border-blue-500/50 transition-all duration-500 h-full">
+                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                   
+                   <div className="relative z-10 text-left">
+                     <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-blue-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                       <PenTool className="w-8 h-8 text-white" />
+                     </div>
+                     <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-blue-300 transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>Cover Letter Generator</h3>
+                     <p className="text-slate-400 text-sm leading-relaxed mb-5">Generate tailored cover letters instantly using AI. Just paste your resume and job description.</p>
+                     <div className="flex flex-wrap gap-2">
+                       <span className="text-xs px-3 py-1.5 bg-blue-500/20 text-blue-300 rounded-full border border-blue-500/30">AI Powered</span>
+                       <span className="text-xs px-3 py-1.5 bg-cyan-500/20 text-cyan-300 rounded-full border border-cyan-500/30">4 Tones</span>
+                       <span className="text-xs px-3 py-1.5 bg-sky-500/20 text-sky-300 rounded-full border border-sky-500/30">Instant</span>
+                     </div>
                    </div>
-                   <h3 className="text-xl sm:text-2xl font-bold text-white mb-3">Cover Letter Generator</h3>
-                   <p className="text-slate-400 text-sm sm:text-base mb-4">Generate tailored cover letters instantly using AI. Just paste your resume and job description.</p>
-                   <div className="flex flex-wrap gap-2">
-                     <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 rounded-lg">AI Powered</span>
-                     <span className="text-xs px-2 py-1 bg-cyan-500/20 text-cyan-300 rounded-lg">4 Tones</span>
-                     <span className="text-xs px-2 py-1 bg-sky-500/20 text-sky-300 rounded-lg">Instant</span>
+                   
+                   <div className="absolute bottom-6 right-6 w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center group-hover:bg-blue-500 transition-all duration-300">
+                     <ArrowRight className="w-5 h-5 text-slate-500 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
                    </div>
                  </div>
-                 <ArrowRight className="absolute bottom-6 right-6 w-5 h-5 text-slate-500 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
                </button>
                
                {/* Job Analyzer Card */}
                <button
                  onClick={() => navigateToFeature('jobanalyzer')}
-                 className="group relative p-6 sm:p-8 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-700/50 hover:border-amber-500/50 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-amber-500/20 text-left"
+                 className="card-premium group relative overflow-hidden"
                >
-                 <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-yellow-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                 <div className="relative">
-                   <div className="w-16 h-16 bg-gradient-to-br from-amber-600 to-yellow-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-amber-500/30 group-hover:scale-110 transition-transform">
-                     <Search className="w-8 h-8 text-white" />
+                 <div className="absolute inset-0 bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
+                 <div className="relative bg-slate-900/90 backdrop-blur-xl rounded-3xl p-8 border border-slate-700/50 group-hover:border-amber-500/50 transition-all duration-500 h-full">
+                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                   
+                   <div className="relative z-10 text-left">
+                     <div className="w-16 h-16 bg-gradient-to-br from-amber-600 to-yellow-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-amber-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                       <Search className="w-8 h-8 text-white" />
+                     </div>
+                     <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-amber-300 transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>Job Description Analyzer</h3>
+                     <p className="text-slate-400 text-sm leading-relaxed mb-5">Decode any job posting. Extract key skills, requirements, and get preparation tips.</p>
+                     <div className="flex flex-wrap gap-2">
+                       <span className="text-xs px-3 py-1.5 bg-amber-500/20 text-amber-300 rounded-full border border-amber-500/30">Skills</span>
+                       <span className="text-xs px-3 py-1.5 bg-yellow-500/20 text-yellow-300 rounded-full border border-yellow-500/30">Red Flags</span>
+                       <span className="text-xs px-3 py-1.5 bg-orange-500/20 text-orange-300 rounded-full border border-orange-500/30">Prep Tips</span>
+                     </div>
                    </div>
-                   <h3 className="text-xl sm:text-2xl font-bold text-white mb-3">Job Description Analyzer</h3>
-                   <p className="text-slate-400 text-sm sm:text-base mb-4">Decode any job posting. Extract key skills, requirements, and get preparation tips.</p>
-                   <div className="flex flex-wrap gap-2">
-                     <span className="text-xs px-2 py-1 bg-amber-500/20 text-amber-300 rounded-lg">Skill Extract</span>
-                     <span className="text-xs px-2 py-1 bg-yellow-500/20 text-yellow-300 rounded-lg">Red Flags</span>
-                     <span className="text-xs px-2 py-1 bg-orange-500/20 text-orange-300 rounded-lg">Prep Tips</span>
+                   
+                   <div className="absolute bottom-6 right-6 w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center group-hover:bg-amber-500 transition-all duration-300">
+                     <ArrowRight className="w-5 h-5 text-slate-500 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
                    </div>
                  </div>
-                 <ArrowRight className="absolute bottom-6 right-6 w-5 h-5 text-slate-500 group-hover:text-amber-400 group-hover:translate-x-1 transition-all" />
                </button>
                
                {/* Email Writer Card */}
                <button
                  onClick={() => navigateToFeature('emailwriter')}
-                 className="group relative p-6 sm:p-8 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-700/50 hover:border-violet-500/50 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-violet-500/20 text-left"
+                 className="card-premium group relative overflow-hidden"
                >
-                 <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-fuchsia-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                 <div className="relative">
-                   <div className="w-16 h-16 bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-violet-500/30 group-hover:scale-110 transition-transform">
-                     <Mail className="w-8 h-8 text-white" />
+                 <div className="absolute inset-0 bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
+                 <div className="relative bg-slate-900/90 backdrop-blur-xl rounded-3xl p-8 border border-slate-700/50 group-hover:border-violet-500/50 transition-all duration-500 h-full">
+                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-violet-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                   
+                   <div className="relative z-10 text-left">
+                     <div className="w-16 h-16 bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-violet-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                       <Mail className="w-8 h-8 text-white" />
+                     </div>
+                     <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-violet-300 transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>AI Email Writer</h3>
+                     <p className="text-slate-400 text-sm leading-relaxed mb-5">Write professional job-related emails. Follow-ups, thank you notes, negotiations & more.</p>
+                     <div className="flex flex-wrap gap-2">
+                       <span className="text-xs px-3 py-1.5 bg-violet-500/20 text-violet-300 rounded-full border border-violet-500/30">5 Types</span>
+                       <span className="text-xs px-3 py-1.5 bg-fuchsia-500/20 text-fuchsia-300 rounded-full border border-fuchsia-500/30">Professional</span>
+                       <span className="text-xs px-3 py-1.5 bg-purple-500/20 text-purple-300 rounded-full border border-purple-500/30">Instant</span>
+                     </div>
                    </div>
-                   <h3 className="text-xl sm:text-2xl font-bold text-white mb-3">AI Email Writer</h3>
-                   <p className="text-slate-400 text-sm sm:text-base mb-4">Write professional job-related emails. Follow-ups, thank you notes, negotiations & more.</p>
-                   <div className="flex flex-wrap gap-2">
-                     <span className="text-xs px-2 py-1 bg-violet-500/20 text-violet-300 rounded-lg">5 Types</span>
-                     <span className="text-xs px-2 py-1 bg-fuchsia-500/20 text-fuchsia-300 rounded-lg">Professional</span>
-                     <span className="text-xs px-2 py-1 bg-purple-500/20 text-purple-300 rounded-lg">Instant</span>
+                   
+                   <div className="absolute bottom-6 right-6 w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center group-hover:bg-violet-500 transition-all duration-300">
+                     <ArrowRight className="w-5 h-5 text-slate-500 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
                    </div>
                  </div>
-                 <ArrowRight className="absolute bottom-6 right-6 w-5 h-5 text-slate-500 group-hover:text-violet-400 group-hover:translate-x-1 transition-all" />
                </button>
              </div>
              
-             {/* Feature Selection Cards - Row 3 (Career Advancement Tools) */}
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl mx-auto mt-6">
+             {/* Premium Feature Cards - Row 3 (Career Advancement Tools) */}
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl mx-auto mt-8">
                {/* LinkedIn Optimizer Card */}
                <button
                  onClick={() => navigateToFeature('linkedin')}
-                 className="group relative p-6 sm:p-8 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-700/50 hover:border-sky-500/50 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-sky-500/20 text-left"
+                 className="card-premium group relative overflow-hidden"
                >
-                 <div className="absolute inset-0 bg-gradient-to-br from-sky-500/5 to-blue-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                 <div className="relative">
-                   <div className="w-16 h-16 bg-gradient-to-br from-sky-600 to-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-sky-500/30 group-hover:scale-110 transition-transform">
-                     <Linkedin className="w-8 h-8 text-white" />
+                 <div className="absolute inset-0 bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
+                 <div className="relative bg-slate-900/90 backdrop-blur-xl rounded-3xl p-8 border border-slate-700/50 group-hover:border-sky-500/50 transition-all duration-500 h-full">
+                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-sky-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                   
+                   <div className="relative z-10 text-left">
+                     <div className="w-16 h-16 bg-gradient-to-br from-sky-600 to-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-sky-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                       <Linkedin className="w-8 h-8 text-white" />
+                     </div>
+                     <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-sky-300 transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>LinkedIn Optimizer</h3>
+                     <p className="text-slate-400 text-sm leading-relaxed mb-5">Optimize your LinkedIn profile for recruiters. Get headline, summary, and keyword suggestions.</p>
+                     <div className="flex flex-wrap gap-2">
+                       <span className="text-xs px-3 py-1.5 bg-sky-500/20 text-sky-300 rounded-full border border-sky-500/30">Profile Score</span>
+                       <span className="text-xs px-3 py-1.5 bg-blue-500/20 text-blue-300 rounded-full border border-blue-500/30">Keywords</span>
+                       <span className="text-xs px-3 py-1.5 bg-indigo-500/20 text-indigo-300 rounded-full border border-indigo-500/30">Headlines</span>
+                     </div>
                    </div>
-                   <h3 className="text-xl sm:text-2xl font-bold text-white mb-3">LinkedIn Optimizer</h3>
-                   <p className="text-slate-400 text-sm sm:text-base mb-4">Optimize your LinkedIn profile for recruiters. Get headline, summary, and keyword suggestions.</p>
-                   <div className="flex flex-wrap gap-2">
-                     <span className="text-xs px-2 py-1 bg-sky-500/20 text-sky-300 rounded-lg">Profile Score</span>
-                     <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 rounded-lg">Keywords</span>
-                     <span className="text-xs px-2 py-1 bg-indigo-500/20 text-indigo-300 rounded-lg">Headlines</span>
+                   
+                   <div className="absolute bottom-6 right-6 w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center group-hover:bg-sky-500 transition-all duration-300">
+                     <ArrowRight className="w-5 h-5 text-slate-500 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
                    </div>
                  </div>
-                 <ArrowRight className="absolute bottom-6 right-6 w-5 h-5 text-slate-500 group-hover:text-sky-400 group-hover:translate-x-1 transition-all" />
                </button>
                
                {/* Interview Q&A Bank Card */}
                <button
                  onClick={() => navigateToFeature('qabank')}
-                 className="group relative p-6 sm:p-8 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-700/50 hover:border-rose-500/50 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-rose-500/20 text-left"
+                 className="card-premium group relative overflow-hidden"
                >
-                 <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-pink-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                 <div className="relative">
-                   <div className="w-16 h-16 bg-gradient-to-br from-rose-600 to-pink-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-rose-500/30 group-hover:scale-110 transition-transform">
-                     <MessageSquare className="w-8 h-8 text-white" />
+                 <div className="absolute inset-0 bg-gradient-to-r from-rose-500 via-pink-500 to-red-500 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
+                 <div className="relative bg-slate-900/90 backdrop-blur-xl rounded-3xl p-8 border border-slate-700/50 group-hover:border-rose-500/50 transition-all duration-500 h-full">
+                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-rose-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                   
+                   <div className="relative z-10 text-left">
+                     <div className="w-16 h-16 bg-gradient-to-br from-rose-600 to-pink-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-rose-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                       <MessageSquare className="w-8 h-8 text-white" />
+                     </div>
+                     <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-rose-300 transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>Interview Q&A Bank</h3>
+                     <p className="text-slate-400 text-sm leading-relaxed mb-5">Get role-specific interview questions with model answers. Behavioral, technical & situational.</p>
+                     <div className="flex flex-wrap gap-2">
+                       <span className="text-xs px-3 py-1.5 bg-rose-500/20 text-rose-300 rounded-full border border-rose-500/30">50+ Questions</span>
+                       <span className="text-xs px-3 py-1.5 bg-pink-500/20 text-pink-300 rounded-full border border-pink-500/30">STAR Format</span>
+                       <span className="text-xs px-3 py-1.5 bg-red-500/20 text-red-300 rounded-full border border-red-500/30">Tips</span>
+                     </div>
                    </div>
-                   <h3 className="text-xl sm:text-2xl font-bold text-white mb-3">Interview Q&A Bank</h3>
-                   <p className="text-slate-400 text-sm sm:text-base mb-4">Get role-specific interview questions with model answers. Behavioral, technical & situational.</p>
-                   <div className="flex flex-wrap gap-2">
-                     <span className="text-xs px-2 py-1 bg-rose-500/20 text-rose-300 rounded-lg">50+ Questions</span>
-                     <span className="text-xs px-2 py-1 bg-pink-500/20 text-pink-300 rounded-lg">STAR Format</span>
-                     <span className="text-xs px-2 py-1 bg-red-500/20 text-red-300 rounded-lg">Tips</span>
+                   
+                   <div className="absolute bottom-6 right-6 w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center group-hover:bg-rose-500 transition-all duration-300">
+                     <ArrowRight className="w-5 h-5 text-slate-500 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
                    </div>
                  </div>
-                 <ArrowRight className="absolute bottom-6 right-6 w-5 h-5 text-slate-500 group-hover:text-rose-400 group-hover:translate-x-1 transition-all" />
                </button>
                
                {/* Salary Coach Card */}
                <button
                  onClick={() => navigateToFeature('salarycoach')}
-                 className="group relative p-6 sm:p-8 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl rounded-3xl border border-slate-700/50 hover:border-emerald-500/50 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-emerald-500/20 text-left"
+                 className="card-premium group relative overflow-hidden"
                >
-                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-green-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                 <div className="relative">
-                   <div className="w-16 h-16 bg-gradient-to-br from-emerald-600 to-green-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform">
-                     <BadgeDollarSign className="w-8 h-8 text-white" />
+                 <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl"></div>
+                 <div className="relative bg-slate-900/90 backdrop-blur-xl rounded-3xl p-8 border border-slate-700/50 group-hover:border-emerald-500/50 transition-all duration-500 h-full">
+                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                   
+                   <div className="relative z-10 text-left">
+                     <div className="w-16 h-16 bg-gradient-to-br from-emerald-600 to-green-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-emerald-500/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                       <BadgeDollarSign className="w-8 h-8 text-white" />
+                     </div>
+                     <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-emerald-300 transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>Salary Negotiation Coach</h3>
+                     <p className="text-slate-400 text-sm leading-relaxed mb-5">Get market salary insights and negotiation scripts. Counter-offer strategies & email templates.</p>
+                     <div className="flex flex-wrap gap-2">
+                       <span className="text-xs px-3 py-1.5 bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/30">Market Data</span>
+                       <span className="text-xs px-3 py-1.5 bg-green-500/20 text-green-300 rounded-full border border-green-500/30">Scripts</span>
+                       <span className="text-xs px-3 py-1.5 bg-teal-500/20 text-teal-300 rounded-full border border-teal-500/30">Templates</span>
+                     </div>
                    </div>
-                   <h3 className="text-xl sm:text-2xl font-bold text-white mb-3">Salary Negotiation Coach</h3>
-                   <p className="text-slate-400 text-sm sm:text-base mb-4">Get market salary insights and negotiation scripts. Counter-offer strategies & email templates.</p>
-                   <div className="flex flex-wrap gap-2">
-                     <span className="text-xs px-2 py-1 bg-emerald-500/20 text-emerald-300 rounded-lg">Market Data</span>
-                     <span className="text-xs px-2 py-1 bg-green-500/20 text-green-300 rounded-lg">Scripts</span>
-                     <span className="text-xs px-2 py-1 bg-teal-500/20 text-teal-300 rounded-lg">Templates</span>
+                   
+                   <div className="absolute bottom-6 right-6 w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center group-hover:bg-emerald-500 transition-all duration-300">
+                     <ArrowRight className="w-5 h-5 text-slate-500 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
                    </div>
                  </div>
-                 <ArrowRight className="absolute bottom-6 right-6 w-5 h-5 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
                </button>
              </div>
              
-             {/* Feature highlights */}
-             <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mt-10">
-               <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50">
-                 <Eye className="w-4 sm:w-5 h-4 sm:h-5 text-cyan-400" />
-                 <span className="text-xs sm:text-sm font-medium text-slate-300">FACS Analysis</span>
+             {/* Premium Feature highlights */}
+             <div className="flex flex-wrap justify-center gap-4 mt-16">
+               <div className="glass flex items-center gap-3 px-5 py-3">
+                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
+                   <Eye className="w-4 h-4 text-white" />
+                 </div>
+                 <span className="text-sm font-medium text-white">FACS Analysis</span>
                </div>
-               <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50">
-                 <Brain className="w-4 sm:w-5 h-4 sm:h-5 text-purple-400" />
-                 <span className="text-xs sm:text-sm font-medium text-slate-300">Neural Processing</span>
+               <div className="glass flex items-center gap-3 px-5 py-3">
+                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                   <Brain className="w-4 h-4 text-white" />
+                 </div>
+                 <span className="text-sm font-medium text-white">Neural Processing</span>
                </div>
-               <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50">
-                 <Activity className="w-4 sm:w-5 h-4 sm:h-5 text-pink-400" />
-                 <span className="text-xs sm:text-sm font-medium text-slate-300">Vocal Forensics</span>
+               <div className="glass flex items-center gap-3 px-5 py-3">
+                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
+                   <Activity className="w-4 h-4 text-white" />
+                 </div>
+                 <span className="text-sm font-medium text-white">Vocal Forensics</span>
                </div>
-               <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50">
-                 <Shield className="w-4 sm:w-5 h-4 sm:h-5 text-green-400" />
-                 <span className="text-xs sm:text-sm font-medium text-slate-300">Authenticity AI</span>
+               <div className="glass flex items-center gap-3 px-5 py-3">
+                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
+                   <Shield className="w-4 h-4 text-white" />
+                 </div>
+                 <span className="text-sm font-medium text-white">Authenticity AI</span>
                </div>
              </div>
            </div>
@@ -1343,4 +1571,13 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+// Main App with AuthProvider
+const AppWithAuth: React.FC = () => {
+  return (
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  );
+};
+
+export default AppWithAuth;
